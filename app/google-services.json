@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "743344014954",
+    "project_id": "janus-365711",
+    "storage_bucket": "janus-365711.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:743344014954:android:b8b34ceaab737bca53ac13",
+        "android_client_info": {
+          "package_name": "com.mina.janus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "743344014954-6ehlip8fd8buhpqajra5j5j7huqv7d9b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACj6pL3ihZZ5lLcHctfEPYn54bbx4GhMQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "743344014954-6ehlip8fd8buhpqajra5j5j7huqv7d9b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
