@@ -27,7 +27,6 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.mina.janus.R
-import com.mina.janus.utilities.Constants.showToast
 
 
 class MapsFragment : Fragment() {
@@ -37,8 +36,9 @@ class MapsFragment : Fragment() {
     private lateinit var googleMap: GoogleMap
     private lateinit var textYourLocation:TextView
     private lateinit var textWhereto: TextView
-    private val shobraBanha = LatLng(30.206953, 31.232221)
-    private lateinit var markerName: Marker
+    ///private val shobraBanha = LatLng(30.206953, 31.232221)
+    private lateinit var wheretoMarker: Marker
+    private lateinit var yourLocationMarker: Marker
 
 
     private val callback = OnMapReadyCallback { googleMap ->
@@ -51,7 +51,6 @@ class MapsFragment : Fragment() {
                     Toast.makeText(this.requireContext(),"error",Toast.LENGTH_SHORT).show()
             }
         }
-        markerName = googleMap.addMarker(MarkerOptions().position(shobraBanha).title("Title"))!!
     }
 
 
@@ -81,6 +80,16 @@ class MapsFragment : Fragment() {
 
             startActivityForResult(intent,100)
         }
+        textYourLocation.isFocusable = false
+        textYourLocation.setOnClickListener{
+            val fieldList = listOf(
+                Place.Field.ADDRESS, Place.Field.LAT_LNG, Place.Field.NAME
+            )
+            val intent =
+                Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fieldList).build(requireContext())
+
+            startActivityForResult(intent,200)
+        }
     }
     private fun initViews(view: View){
         textWhereto =view.findViewById(R.id.textWhereto)
@@ -103,14 +112,25 @@ class MapsFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        showToast("onActivityResult",requireContext())
         if(requestCode== 100&& resultCode== RESULT_OK){
-            showToast("result code is 100",requireContext())
             val place= Autocomplete.getPlaceFromIntent(data)
             textWhereto.text = place.address
-            place.latLng?.let { place.address?.let { it1 -> dropPin(it, it1) } }
+            if(::wheretoMarker.isInitialized) {
+                wheretoMarker.remove()
+            }
+            wheretoMarker = place.latLng?.let { MarkerOptions().position(it).title(place.address) }
+                ?.let { googleMap.addMarker(it) }!!
             place.latLng?.let { moveCamera(it,20f) }
-            markerName.remove()
+        }
+        if(requestCode== 200&& resultCode== RESULT_OK){
+            val place= Autocomplete.getPlaceFromIntent(data)
+            textYourLocation.text = place.address
+            if(::yourLocationMarker.isInitialized) {
+                yourLocationMarker.remove()
+            }
+            yourLocationMarker = place.latLng?.let { MarkerOptions().position(it).title(place.address) }
+                ?.let { googleMap.addMarker(it) }!!
+            place.latLng?.let { moveCamera(it,20f) }
         }
     }
 
@@ -164,9 +184,8 @@ class MapsFragment : Fragment() {
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom))
     }
 
-    private fun dropPin(latLng: LatLng, title:String){
-        googleMap.addMarker(MarkerOptions().position(latLng).title(title))
+    fun getDirectionURL(origin:LatLng,dest:LatLng):String{
+        return  "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${dest.latitude},${dest.longitude}&sensor=false&mode=driving&key=AIzaSyACj6pL3ihZZ5lLcHctfEPYn54bbx4GhMQ"
     }
-
 
 }

@@ -55,6 +55,7 @@
                 android:drawableLeft="@drawable/ic_location_on"
                 android:hint="your start location"
                 android:drawablePadding="@dimen/_5sdp"
+                android:maxLines="2"
                 />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -79,7 +80,7 @@
                 android:drawableStart="@drawable/ic_not_listed_location"
                 android:drawablePadding="@dimen/_5sdp"
                 android:hint="where to ?"
-                android:textColorHint="@color/grey"
+                android:maxLines="2"
                 />
         </com.google.android.material.textfield.TextInputLayout>
 
