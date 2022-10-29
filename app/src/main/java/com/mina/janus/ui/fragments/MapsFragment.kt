@@ -5,6 +5,7 @@ import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.android.volley.DefaultRetryPolicy
+import com.android.volley.Request
+import com.android.volley.RetryPolicy
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -22,11 +28,14 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.mina.janus.R
+import com.mina.janus.utilities.Constants.showToast
+import org.json.JSONException
 
 
 class MapsFragment : Fragment() {
@@ -51,6 +60,7 @@ class MapsFragment : Fragment() {
                     Toast.makeText(this.requireContext(),"error",Toast.LENGTH_SHORT).show()
             }
         }
+        direction(LatLng(30.78847 ,31.00192),LatLng(30.005493,31.477898))
     }
 
 
@@ -184,8 +194,95 @@ class MapsFragment : Fragment() {
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom))
     }
 
-    fun getDirectionURL(origin:LatLng,dest:LatLng):String{
-        return  "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${dest.latitude},${dest.longitude}&sensor=false&mode=driving&key=AIzaSyACj6pL3ihZZ5lLcHctfEPYn54bbx4GhMQ"
+    private fun direction(origin: LatLng, dest: LatLng) {
+        val requestQueue = Volley.newRequestQueue(requireContext())
+        val url = Uri.parse("https://maps.googleapis.com/maps/api/directions/json")
+            .buildUpon()
+            .appendQueryParameter("origin", origin.latitude.toString() + ", " + origin.longitude)
+            .appendQueryParameter("destination", dest.latitude.toString() + ", " + dest.longitude)
+            .appendQueryParameter("mode", "driving")
+            .appendQueryParameter("key", "AIzaSyBJMDGZL3iNE2n-kUYQJYM3J0whIWGupaM")
+            .toString()
+        val jsonObjectRequest = JsonObjectRequest(
+            Request.Method.GET, url, null,
+            { response ->
+                try {
+                    val status = response.getString("status")
+                    showToast(status,requireContext())
+                    if (status == "OK") {
+                        val routes = response.getJSONArray("routes")
+                        var points: java.util.ArrayList<LatLng?>
+                        var polylineOptions: PolylineOptions? = null
+                        for (i in 0 until routes.length()) {
+                            points = java.util.ArrayList()
+                            polylineOptions = PolylineOptions()
+                            val legs = routes.getJSONObject(i).getJSONArray("legs")
+                            for (j in 0 until legs.length()) {
+                                val steps = legs.getJSONObject(j).getJSONArray("steps")
+                                for (k in 0 until steps.length()) {
+                                    val polyline = steps.getJSONObject(k).getJSONObject("polyline")
+                                        .getString("points")
+                                    val list = decodePoly(polyline)
+                                    for (l in list!!.indices) {
+                                        val position = LatLng(list[l].latitude, list[l].longitude)
+                                        points.add(position)
+                                    }
+                                }
+                            }
+                            polylineOptions.addAll(points)
+                            polylineOptions.width(15f)
+                            polylineOptions.color(ContextCompat.getColor(requireContext(),R.color.red))
+                            polylineOptions.geodesic(true)
+                        }
+                        polylineOptions?.let { googleMap.addPolyline(it) }
+
+                     //   googleMap.addMarker()
+                    }
+                } catch (e: JSONException) {
+                    e.printStackTrace()
+                }
+            }) { }
+        val retryPolicy: RetryPolicy = DefaultRetryPolicy(
+            30000,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        )
+        jsonObjectRequest.retryPolicy = retryPolicy
+        requestQueue.add(jsonObjectRequest)
+    }
+    private fun decodePoly(encoded: String): List<LatLng>? {
+        val poly: MutableList<LatLng> = ArrayList()
+        var index = 0
+        val len = encoded.length
+        var lat = 0
+        var lng = 0
+        while (index < len) {
+            var b: Int
+            var shift = 0
+            var result = 0
+            do {
+                b = encoded[index++].code - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+            val dlat = if (result and 1 != 0) (result shr 1).inv() else result shr 1
+            lat += dlat
+            shift = 0
+            result = 0
+            do {
+                b = encoded[index++].code - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+            val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
+            lng += dlng
+            val p = LatLng(
+                lat.toDouble() / 1E5,
+                lng.toDouble() / 1E5
+            )
+            poly.add(p)
+        }
+        return poly
     }
 
 }
