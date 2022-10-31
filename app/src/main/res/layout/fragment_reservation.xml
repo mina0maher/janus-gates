@@ -7,7 +7,7 @@
     tools:context=".ui.fragments.ReservationFragment">
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayout"
+        android:id="@+id/edit_search_layout"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
         android:layout_marginStart="@dimen/_10sdp">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/textYourLocation"
+            android:id="@+id/edit_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawableLeft="@drawable/ic_search"
@@ -34,7 +34,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
-        android:id="@+id/confirmedTextView"
+        android:id="@+id/text_choose_gates"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_10sdp"
@@ -46,21 +46,21 @@
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textInputLayout" />
+        app:layout_constraintTop_toBottomOf="@id/edit_search_layout" />
 
     <ImageView
-        android:id="@+id/confirmedImageView"
+        android:id="@+id/choose_gates_line"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:src="@drawable/line_under_text"
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/confirmedTextView"
+        app:layout_constraintTop_toBottomOf="@+id/text_choose_gates"
         android:layout_marginTop="@dimen/_3sdp"/>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+        android:id="@+id/recycler_gates"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_5sdp"
@@ -68,11 +68,11 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/confirmedImageView"
+        app:layout_constraintTop_toBottomOf="@+id/choose_gates_line"
         tools:listitem="@layout/item_view" />
 
     <TextView
-        android:id="@+id/id1"
+        android:id="@+id/text_choose_car"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Choose your car :"
@@ -82,20 +82,20 @@
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/recyclerView"
+        app:layout_constraintTop_toBottomOf="@+id/recycler_gates"
         android:layout_marginTop="@dimen/_20sdp"
         android:layout_marginStart="@dimen/_10sdp"/>
 
     <ImageView
-        android:id="@+id/id2"
+        android:id="@+id/choose_car_line"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:src="@drawable/line_under_text"
         android:visibility="visible"
-        app:layout_constraintTop_toBottomOf="@id/id1"
+        app:layout_constraintTop_toBottomOf="@id/text_choose_car"
         android:layout_marginTop="@dimen/_3sdp"/>
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView2"
+        android:id="@+id/recycler_cars"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_5sdp"
@@ -103,11 +103,11 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/id2"
+        app:layout_constraintTop_toBottomOf="@+id/choose_car_line"
         tools:listitem="@layout/item_car" />
 
     <TextView
-        android:id="@+id/id4"
+        android:id="@+id/text_total"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Total : 35 EGP"
@@ -117,10 +117,10 @@
         android:visibility="visible"
         android:layout_marginEnd="@dimen/_10sdp"
         android:layout_marginBottom="@dimen/_8sdp"
-        app:layout_constraintBottom_toTopOf="@+id/frameLayout2"
+        app:layout_constraintBottom_toTopOf="@+id/frameLayout"
       app:layout_constraintEnd_toEndOf="parent" />
     <FrameLayout
-        android:id="@+id/frameLayout2"
+        android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:animateLayoutChanges="true"
@@ -132,10 +132,10 @@
         android:layout_marginBottom="@dimen/_20sdp">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonSignIn"
+            android:id="@+id/button_pay"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_50sdp"
-            android:text="confirm"
+            android:text="pay now"
             android:textColor="@color/white"
             android:textSize="@dimen/_13ssp"
             android:textStyle="bold"

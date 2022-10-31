@@ -10,12 +10,13 @@
     android:elevation="@dimen/_20sdp"
     >
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/item_car_layout"
         android:layout_width="@dimen/_230sdp"
         android:layout_height="@dimen/_60sdp"
         android:padding="@dimen/_8sdp"
-        android:background="@drawable/item_gate_background">
+        >
     <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/imageProfile"
+        android:id="@+id/carImage"
         android:layout_width="@dimen/_45sdp"
         android:layout_height="@dimen/_45sdp"
         android:background="@drawable/getstarted"
@@ -27,12 +28,12 @@
         android:id="@+id/viewSupporter"
         android:layout_width="1dp"
         android:layout_height="1dp"
-        app:layout_constraintBottom_toBottomOf="@+id/imageProfile"
-        app:layout_constraintStart_toEndOf="@+id/imageProfile"
-        app:layout_constraintTop_toTopOf="@id/imageProfile"/>
+        app:layout_constraintBottom_toBottomOf="@+id/carImage"
+        app:layout_constraintStart_toEndOf="@+id/carImage"
+        app:layout_constraintTop_toTopOf="@id/carImage"/>
     <TextView
         android:text="My car 1"
-        android:id="@+id/textName"
+        android:id="@+id/text_car_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_8sdp"
@@ -42,12 +43,12 @@
         android:textColor="@color/primary_text"
         android:textSize="@dimen/_13ssp"
         app:layout_constraintBottom_toTopOf="@+id/viewSupporter"
-        app:layout_constraintEnd_toStartOf="@id/numberOfTickets"
-        app:layout_constraintStart_toEndOf="@+id/imageProfile"
+        app:layout_constraintEnd_toStartOf="@id/image_check"
+        app:layout_constraintStart_toEndOf="@+id/carImage"
         android:transitionName="nameTransition"/>
     <TextView
         android:text="ع س ق 1234"
-        android:id="@+id/textPhone"
+        android:id="@+id/text_car_number"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_8sdp"
@@ -57,12 +58,12 @@
         android:textColor="@color/secondary_text"
         android:textSize="@dimen/_10ssp"
         android:textAlignment="textEnd"
-        app:layout_constraintEnd_toStartOf="@id/textDate"
-        app:layout_constraintStart_toEndOf="@+id/imageProfile"
+        app:layout_constraintEnd_toStartOf="@id/text_car_model"
+        app:layout_constraintStart_toEndOf="@+id/carImage"
         app:layout_constraintTop_toBottomOf="@id/viewSupporter"/>
     <TextView
         android:text="KIA sportage"
-        android:id="@+id/textDate"
+        android:id="@+id/text_car_model"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_8sdp"
@@ -72,19 +73,20 @@
         android:textColor="@color/secondary_text"
         android:textSize="@dimen/_8ssp"
         android:textAlignment="textStart"
-        app:layout_constraintEnd_toStartOf="@id/numberOfTickets"
-        app:layout_constraintStart_toEndOf="@+id/textPhone"
+        app:layout_constraintEnd_toStartOf="@id/image_check"
+        app:layout_constraintStart_toEndOf="@+id/text_car_number"
         app:layout_constraintTop_toBottomOf="@id/viewSupporter"
         />
 
         <ImageView
-            android:id="@+id/numberOfTickets"
+            android:id="@+id/image_check"
             android:layout_width="@dimen/_20sdp"
             android:layout_height="@dimen/_20sdp"
             android:src="@drawable/ic_check_circle"
             app:tint="@color/primary_light"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="invisible"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>
