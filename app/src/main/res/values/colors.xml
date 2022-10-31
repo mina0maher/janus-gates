@@ -10,6 +10,7 @@
     <color name="red">#FF0000</color>
 
     <color name="grey">#A0A2A5</color>
+    <color name="gray1">#D5D5D5</color>
     <color name="primary_dark">#3A9EC2</color>
     <color name="primary_light">#6BC5E8</color>
     <color name="primary_text" >#212121</color>

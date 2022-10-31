@@ -250,7 +250,7 @@ class MapsFragment : Fragment() {
         jsonObjectRequest.retryPolicy = retryPolicy
         requestQueue.add(jsonObjectRequest)
     }
-    private fun decodePoly(encoded: String): List<LatLng>? {
+    private fun decodePoly(encoded: String): List<LatLng> {
         val poly: MutableList<LatLng> = ArrayList()
         var index = 0
         val len = encoded.length
