@@ -53,8 +53,9 @@ class MapsFragment : Fragment() {
     private lateinit var yourLocationMarker: Marker
     private lateinit var  yourLocationLatLng:LatLng
     private lateinit var  whereToLatLng:LatLng
-    var polylineFinal: Polyline? = null
-    var arr : Array<Int>?=null
+    private var polylineFinal: Polyline? = null
+    private var arr :IntArray?=null;
+
     private var locationPermissionGranted = false
     private val apiViewModel: ApiViewModel by viewModels()
 
@@ -112,7 +113,7 @@ class MapsFragment : Fragment() {
             startActivityForResult(intent,200)
         }
         buttonConfirm.setOnClickListener{
-            val bundle = bundleOf("gatesID" to arr)
+            val bundle = bundleOf("gatesID" to arr )
             findNavController().navigate(R.id.action_mapsFragment_to_reservationFragment,bundle)
         }
     }
@@ -262,14 +263,15 @@ class MapsFragment : Fragment() {
                  .include(yourLocationLatLng)
                  .include(whereToLatLng)
                  .build()
-             val point = Point()
+             var point = Point()
                 requireActivity().windowManager.defaultDisplay.getSize(point)
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,point.x,600,30))
                 loading(false)
                 if(it.gatesAlongRoute != null) {
-                    arr = Array<Int>(it.gatesAlongRoute.size){ 0 }
+                    showToast("gate is ${it.gatesAlongRoute.get(0).id}",requireContext())
+                    arr = IntArray(it.gatesAlongRoute.size)
                     for (i in arr!!){
-                        arr!![i]= it.gatesAlongRoute[i].id!!
+                        arr!![i] = it.gatesAlongRoute[i].id!!
                     }
                 }else{
                     arr = null

@@ -18,7 +18,7 @@
         >
 
         <ImageView
-            android:id="@+id/image_check"
+            android:id="@+id/gate_check"
             android:layout_width="@dimen/_20sdp"
             android:layout_height="@dimen/_20sdp"
             android:src="@drawable/ic_check_circle"

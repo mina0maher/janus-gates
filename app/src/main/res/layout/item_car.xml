@@ -42,7 +42,7 @@
         android:textColor="@color/primary_text"
         android:textSize="@dimen/_13ssp"
         app:layout_constraintBottom_toTopOf="@+id/viewSupporter"
-        app:layout_constraintEnd_toStartOf="@id/image_check"
+        app:layout_constraintEnd_toStartOf="@id/gate_check"
         app:layout_constraintStart_toEndOf="@+id/carImage"
         android:transitionName="nameTransition"/>
     <TextView
@@ -72,13 +72,13 @@
         android:textColor="@color/secondary_text"
         android:textSize="@dimen/_8ssp"
         android:textAlignment="textStart"
-        app:layout_constraintEnd_toStartOf="@id/image_check"
+        app:layout_constraintEnd_toStartOf="@id/gate_check"
         app:layout_constraintStart_toEndOf="@+id/text_car_number"
         app:layout_constraintTop_toBottomOf="@id/viewSupporter"
         />
 
         <ImageView
-            android:id="@+id/image_check"
+            android:id="@+id/gate_check"
             android:layout_width="@dimen/_20sdp"
             android:layout_height="@dimen/_20sdp"
             android:src="@drawable/ic_check_circle"

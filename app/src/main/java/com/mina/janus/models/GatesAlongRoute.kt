@@ -6,5 +6,6 @@ data class GatesAlongRoute(
     val location: Location?,
     val name: String?,
     val prices: List<Price>?,
-    val imageUrl:String?
+    val imageUrl:String?,
+    var isChecked:Boolean?
 )
