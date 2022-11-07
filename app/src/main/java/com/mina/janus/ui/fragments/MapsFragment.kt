@@ -16,9 +16,11 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -52,6 +54,7 @@ class MapsFragment : Fragment() {
     private lateinit var  yourLocationLatLng:LatLng
     private lateinit var  whereToLatLng:LatLng
     var polylineFinal: Polyline? = null
+    var arr : Array<Int>?=null
     private var locationPermissionGranted = false
     private val apiViewModel: ApiViewModel by viewModels()
 
@@ -107,6 +110,10 @@ class MapsFragment : Fragment() {
                 Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fieldList).build(requireContext())
 
             startActivityForResult(intent,200)
+        }
+        buttonConfirm.setOnClickListener{
+            val bundle = bundleOf("gatesID" to arr)
+            findNavController().navigate(R.id.action_mapsFragment_to_reservationFragment,bundle)
         }
     }
     private fun initViews(view: View){
@@ -255,10 +262,18 @@ class MapsFragment : Fragment() {
                  .include(yourLocationLatLng)
                  .include(whereToLatLng)
                  .build()
-             var point = Point()
+             val point = Point()
                 requireActivity().windowManager.defaultDisplay.getSize(point)
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,point.x,600,30))
                 loading(false)
+                if(it.gatesAlongRoute != null) {
+                    arr = Array<Int>(it.gatesAlongRoute.size){ 0 }
+                    for (i in arr!!){
+                        arr!![i]= it.gatesAlongRoute[i].id!!
+                    }
+                }else{
+                    arr = null
+                }
             }
         }
         apiViewModel.errorMessageMD.observe(requireActivity()){
@@ -266,6 +281,7 @@ class MapsFragment : Fragment() {
             showToast(it,requireContext())
         }
     }
+
     private fun loading(isLoading:Boolean){
         if(isLoading){
             buttonConfirm.visibility=View.INVISIBLE
