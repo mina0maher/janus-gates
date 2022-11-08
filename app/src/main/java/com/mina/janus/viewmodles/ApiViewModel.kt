@@ -8,10 +8,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolylineOptions
 import com.mina.janus.R
 import com.mina.janus.apis.RetrofitFactory
-import com.mina.janus.models.AddressModel
-import com.mina.janus.models.DirectionsModel
-import com.mina.janus.models.UserLoginModel
-import com.mina.janus.models.UserRegisterModel
+import com.mina.janus.models.*
 import com.mina.janus.utilities.Constants
 import okhttp3.ResponseBody
 import org.json.JSONException
@@ -38,6 +35,9 @@ class ApiViewModel : ViewModel() {
     val directionsBodyLiveData:LiveData<DirectionsModel>
         get() = directionsBodyMD
 
+    var gatesBodyMD: SingleLiveEvent<GatesModel> = SingleLiveEvent()
+    val gatesBodyLiveData:LiveData<GatesModel>
+        get() = gatesBodyMD
 
     fun signIn(userLoginModel: UserLoginModel){
          RetrofitFactory.apiInterface().logIn(userLoginModel)
@@ -89,6 +89,22 @@ class ApiViewModel : ViewModel() {
                 }
 
                 override fun onFailure(call: Call<DirectionsModel>, t: Throwable) {
+                    errorMessageMD.postValue(t.message.toString())
+                }
+
+            })
+    }
+    fun getAllGates(){
+        RetrofitFactory.apiInterface().getGates()
+            .enqueue(object :retrofit2.Callback<GatesModel>{
+                override fun onResponse(call: Call<GatesModel>, response: Response<GatesModel>) {
+                    codesMD.postValue(response.code())
+                    if(response.code()==200){
+                        gatesBodyMD.postValue(response.body())
+                    }
+                }
+
+                override fun onFailure(call: Call<GatesModel>, t: Throwable) {
                     errorMessageMD.postValue(t.message.toString())
                 }
 

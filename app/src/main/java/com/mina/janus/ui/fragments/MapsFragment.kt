@@ -263,7 +263,7 @@ class MapsFragment : Fragment() {
                  .include(yourLocationLatLng)
                  .include(whereToLatLng)
                  .build()
-             var point = Point()
+             val point = Point()
                 requireActivity().windowManager.defaultDisplay.getSize(point)
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,point.x,600,30))
                 loading(false)
