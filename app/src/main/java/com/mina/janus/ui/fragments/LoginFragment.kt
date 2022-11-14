@@ -1,5 +1,8 @@
 package com.mina.janus.ui.fragments
 
+import android.app.Dialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.transition.TransitionInflater
 import android.util.Patterns
@@ -34,7 +37,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private lateinit var preferenceManager: PreferenceManager
     private val apiViewModel: ApiViewModel by viewModels()
     private var isLoginClicked = false
-
+    private lateinit var dialog:Dialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +50,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         if(savedInstanceState!=null){
             isLoginClicked = savedInstanceState.getBoolean(KEY_IS_LOGIN_CLICKED)
         }
+        dialog = Dialog(requireContext())
     }
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -75,7 +79,22 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         buttonSignIn.setOnClickListener{
             loading(true)
             if (isValidSignInDetails()) {
-                signIn()
+                if(isOnline(requireContext())){
+                    signIn()
+                }else{
+                    loading(false)
+                    dialog.setContentView(R.layout.no_internet_for_buttons)
+                    dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    val textView = dialog.findViewById<TextView>(R.id.textDismiss)
+                    val button = dialog.findViewById<Button>(R.id.buttonContact)
+                    textView.visibility = View.GONE
+                    val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
+                    val height = (resources.displayMetrics.heightPixels * 0.80).toInt()
+                    button.setOnClickListener { dialog.dismiss() }
+                    dialog.setCancelable(true)
+                    dialog.window!!.setLayout(width, height)
+                    dialog.show()
+                }
             }else{
                 loading(false)
             }
@@ -116,7 +135,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
 
             apiViewModel.signIn(UserLoginModel(inputEmail.text.toString(),inputPassword.text.toString()))
-            showToast("email:${inputEmail.text.toString()} password:${inputPassword.text.toString()}",requireContext())
+            showToast("email:${inputEmail.text} password:${inputPassword.text}",requireContext())
             apiViewModel.codesLiveData.observe(requireActivity()) {
                 when (it) {
                     200 -> {

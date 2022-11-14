@@ -1,5 +1,8 @@
 package com.mina.janus.ui.fragments
 
+import android.app.Dialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.transition.TransitionInflater
 import android.util.Patterns
@@ -11,12 +14,12 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.mina.janus.R
 import com.mina.janus.models.UserRegisterModel
 import com.mina.janus.utilities.Constants
 import com.mina.janus.utilities.Constants.KEY_IS_SIGNUP_CLICKED
+import com.mina.janus.utilities.Constants.isOnline
 import com.mina.janus.utilities.Constants.showToast
 import com.mina.janus.utilities.PreferenceManager
 import com.mina.janus.viewmodles.ApiViewModel
@@ -36,6 +39,7 @@ class SignupFragment : Fragment(R.layout.fragment_signup) {
     private val apiViewModel: ApiViewModel by viewModels()
     //vars
     private var isSignUpClicked = false
+    private lateinit var dialog:Dialog
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +55,8 @@ class SignupFragment : Fragment(R.layout.fragment_signup) {
         if(savedInstanceState!=null){
             isSignUpClicked = savedInstanceState.getBoolean(KEY_IS_SIGNUP_CLICKED)
         }
+        dialog = Dialog(requireContext())
+
 
     }
 
@@ -83,7 +89,22 @@ class SignupFragment : Fragment(R.layout.fragment_signup) {
         buttonSignUp.setOnClickListener {
             loading(true)
             if (isValidSignUpDetails()) {
-                signUp()
+                if(isOnline(requireContext())) {
+                    signUp()
+                }else{
+                    loading(false)
+                    dialog.setContentView(R.layout.no_internet_for_buttons)
+                    dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    val textView = dialog.findViewById<TextView>(R.id.textDismiss)
+                    val button = dialog.findViewById<Button>(R.id.buttonContact)
+                    textView.visibility = View.GONE
+                    val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
+                    val height = (resources.displayMetrics.heightPixels * 0.80).toInt()
+                    button.setOnClickListener { dialog.dismiss() }
+                    dialog.setCancelable(true)
+                    dialog.window!!.setLayout(width, height)
+                    dialog.show()
+                }
             }else{
                 loading(false)
             }
@@ -91,7 +112,7 @@ class SignupFragment : Fragment(R.layout.fragment_signup) {
     }
 
     private fun signUp(){
-        if(Constants.isOnline(requireActivity())){
+        if(isOnline(requireActivity())){
             isSignUpClicked = true
             loading(true)
 

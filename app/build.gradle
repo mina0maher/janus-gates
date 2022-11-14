@@ -61,8 +61,6 @@ dependencies {
     //retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.6.0'
-    //volley
-    implementation 'com.android.volley:volley:1.2.1'
 
     // view model
     implementation "androidx.activity:activity-ktx:1.6.0"
