@@ -3,10 +3,12 @@ package com.mina.janus.ui.fragments
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.Activity.RESULT_OK
+import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.graphics.Point
-import android.opengl.Visibility
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,9 +17,9 @@ import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -34,10 +36,10 @@ import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.mina.janus.R
 import com.mina.janus.models.AddressModel
+import com.mina.janus.utilities.Constants.isOnline
 import com.mina.janus.utilities.Constants.showToast
 import com.mina.janus.viewmodles.ApiViewModel
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class MapsFragment : Fragment() {
@@ -54,8 +56,8 @@ class MapsFragment : Fragment() {
     private lateinit var  yourLocationLatLng:LatLng
     private lateinit var  whereToLatLng:LatLng
     private var polylineFinal: Polyline? = null
-    private var arr :IntArray?=null;
-
+    private var arr :IntArray?=null
+    private lateinit var dialog: Dialog
     private var locationPermissionGranted = false
     private val apiViewModel: ApiViewModel by viewModels()
 
@@ -69,11 +71,32 @@ class MapsFragment : Fragment() {
                     Toast.makeText(this.requireContext(),"error",Toast.LENGTH_SHORT).show()
             }
         }
-        //direction(LatLng(30.78847 ,31.00192),LatLng(30.005493,31.477898))
     }
 
     private fun getDirectionsFromLatLng(origin:LatLng, destination:LatLng){
-        getDirection(AddressModel("${origin.latitude}, ${origin.longitude}","${destination.latitude}, ${destination.longitude}"))
+            if(isOnline(requireContext())) {
+                getDirection(
+                    AddressModel(
+                        "${origin.latitude}, ${origin.longitude}",
+                        "${destination.latitude}, ${destination.longitude}"
+                    )
+                )
+            }else{
+                showDialog()
+            }
+    }
+    private fun showDialog(){
+        dialog.setContentView(R.layout.no_internet_for_buttons)
+        dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        val textView = dialog.findViewById<TextView>(R.id.textDismiss)
+        val button = dialog.findViewById<Button>(R.id.buttonContact)
+        textView.visibility = View.GONE
+        val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
+        val height = (resources.displayMetrics.heightPixels * 0.80).toInt()
+        button.setOnClickListener { dialog.dismiss() }
+        dialog.setCancelable(true)
+        dialog.window!!.setLayout(width, height)
+        dialog.show()
     }
 
     override fun onCreateView(
@@ -81,9 +104,54 @@ class MapsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        dialog = Dialog(requireContext())
         return inflater.inflate(R.layout.fragment_maps, container, false)
     }
+    private var whereToResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val data: Intent? = result.data
+            val place= data?.let { Autocomplete.getPlaceFromIntent(it) }
+            if(isOnline(requireContext())&&place!=null) {
+                textWhereto.text = place.address
+                if (::wheretoMarker.isInitialized) {
+                    wheretoMarker.remove()
+                }
+                wheretoMarker =
+                    place.latLng?.let { MarkerOptions().position(it).title(place.address) }
+                        ?.let { googleMap.addMarker(it) }!!
+                place.latLng?.let { moveCamera(it, 15f) }
+                whereToLatLng = place.latLng!!
+                if (::yourLocationLatLng.isInitialized) {
+                    getDirectionsFromLatLng(yourLocationLatLng, whereToLatLng)
+                }
+            }else{
+                showDialog()
+            }
+        }
+    }
+    private var yourLocationResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val data: Intent? = result.data
+            val place = data?.let { Autocomplete.getPlaceFromIntent(it) }
+            if (isOnline(requireContext())&&place!=null) {
+                textYourLocation.text = place.address
+                if (::yourLocationMarker.isInitialized) {
+                    yourLocationMarker.remove()
+                }
+                yourLocationMarker =
+                    place.latLng?.let { MarkerOptions().position(it).title(place.address) }
+                        ?.let { googleMap.addMarker(it) }!!
+                place.latLng?.let { moveCamera(it, 15f) }
+                yourLocationLatLng = place.latLng!!
+                if (::whereToLatLng.isInitialized) {
+                    getDirectionsFromLatLng(yourLocationLatLng, whereToLatLng)
+                }
+            }
+        }else{
+            showDialog()
+        }
 
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
@@ -99,9 +167,11 @@ class MapsFragment : Fragment() {
             )
             val intent =
                 Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fieldList).build(requireContext())
-
-            startActivityForResult(intent,100)
+            whereToResultLauncher.launch(intent)
         }
+
+
+
         textYourLocation.isFocusable = false
         textYourLocation.setOnClickListener{
             val fieldList = listOf(
@@ -109,9 +179,10 @@ class MapsFragment : Fragment() {
             )
             val intent =
                 Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fieldList).build(requireContext())
+            yourLocationResultLauncher.launch(intent)
 
-            startActivityForResult(intent,200)
         }
+
         buttonConfirm.setOnClickListener{
             val bundle = bundleOf("gatesID" to arr )
             findNavController().navigate(R.id.action_mapsFragment_to_reservationFragment,bundle)
@@ -134,43 +205,14 @@ class MapsFragment : Fragment() {
                     ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED){
                     locationPermissionGranted = true
         }else{
+
             requestPermissions(permissions, 1234)
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode== 100&& resultCode== RESULT_OK){
-            val place= Autocomplete.getPlaceFromIntent(data)
-            textWhereto.text = place.address
-            if(::wheretoMarker.isInitialized) {
-                wheretoMarker.remove()
-            }
-            wheretoMarker = place.latLng?.let { MarkerOptions().position(it).title(place.address) }
-                ?.let { googleMap.addMarker(it) }!!
-            place.latLng?.let { moveCamera(it,15f) }
-            whereToLatLng = place.latLng
-            if(::yourLocationLatLng.isInitialized){
-                getDirectionsFromLatLng(yourLocationLatLng,whereToLatLng)
-            }
-        }
-        if(requestCode== 200&& resultCode== RESULT_OK){
-            val place= Autocomplete.getPlaceFromIntent(data)
-            textYourLocation.text = place.address
-            if(::yourLocationMarker.isInitialized) {
-                yourLocationMarker.remove()
-            }
-            yourLocationMarker = place.latLng?.let { MarkerOptions().position(it).title(place.address) }
-                ?.let { googleMap.addMarker(it) }!!
-            place.latLng?.let { moveCamera(it,15f) }
-            yourLocationLatLng = place.latLng
-            if(::whereToLatLng.isInitialized){
-                getDirectionsFromLatLng(yourLocationLatLng,whereToLatLng)
-            }
-        }
-    }
 
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -209,6 +251,7 @@ class MapsFragment : Fragment() {
                         moveCamera(LatLng(currentLocation.latitude,currentLocation.longitude),15f)
                     }else{
 
+
                     }
                 }
             }
@@ -227,11 +270,11 @@ class MapsFragment : Fragment() {
             val status = it.directionsResult?.geocodedWaypoints?.get(0)?.geocoderStatus
             if (status == "OK") {
                 val routes = it.directionsResult.routes
-                var points: java.util.ArrayList<LatLng?>
+                var points: ArrayList<LatLng?>
                 var polylineOptions: PolylineOptions? = null
                 if (routes != null) {
                     for (i in routes.indices) {
-                        points = java.util.ArrayList()
+                        points = ArrayList()
                         polylineOptions = PolylineOptions()
                         val legs = routes[i].legs
                         if (legs != null) {
@@ -264,11 +307,12 @@ class MapsFragment : Fragment() {
                  .include(whereToLatLng)
                  .build()
              val point = Point()
+
                 requireActivity().windowManager.defaultDisplay.getSize(point)
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,point.x,600,30))
                 loading(false)
                 if(it.gatesAlongRoute != null) {
-                    showToast("gate is ${it.gatesAlongRoute.get(0).id}",requireContext())
+                    showToast("gate is ${it.gatesAlongRoute[0].id}",requireContext())
                     arr = IntArray(it.gatesAlongRoute.size)
                     for (i in arr!!){
                         arr!![i] = it.gatesAlongRoute[i].id!!

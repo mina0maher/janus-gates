@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,17 +19,19 @@ class ReservationFragment : Fragment() {
 private var array :IntArray?=null
     private val apiViewModel: ApiViewModel by viewModels()
     private var gatesModel:GatesModel? = null
-    private lateinit var recyclerView: RecyclerView
+    private lateinit var gatesRecyclerView: RecyclerView
+    private lateinit var gatesProgressPar:ProgressBar
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_reservation, container, false)
-        recyclerView = view.findViewById(R.id.recycler_gates)
+        gatesRecyclerView = view.findViewById(R.id.recycler_gates)
+        gatesProgressPar = view.findViewById(R.id.gates_progress_par)
         arguments?.let { array = it.getIntArray("gatesID") }
         showToast(array!![0].toString(),requireContext())
         apiViewModel.getAllGates()
+        gatesLoading(true)
         apiViewModel.gatesBodyLiveData.observe(requireActivity()){
             gatesModel = it
             for(i in array!!){
@@ -38,17 +41,29 @@ private var array :IntArray?=null
                     }
                 }
             }
-            recyclerView.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
-            recyclerView.adapter = GatesAdapter(it,requireContext());
-
+            gatesRecyclerView.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
+            gatesRecyclerView.adapter = GatesAdapter(it,requireContext())
+            gatesLoading(false)
         }
         apiViewModel.codesLiveData.observe(requireActivity()){
-            showToast(it.toString(),requireContext());
+            showToast(it.toString(),requireContext())
+            gatesLoading(false)
         }
         apiViewModel.errorMessageLiveData.observe(requireActivity()){
-            showToast(it,requireContext());
+            showToast(it,requireContext())
+            gatesLoading(false)
         }
-        return view;
+
+        return view
+    }
+    private fun gatesLoading(isLoading:Boolean){
+        if(isLoading){
+            gatesRecyclerView.visibility=View.INVISIBLE
+            gatesProgressPar.visibility=View.VISIBLE
+        }else{
+            gatesRecyclerView.visibility=View.VISIBLE
+            gatesProgressPar.visibility=View.INVISIBLE
+        }
     }
 
 }

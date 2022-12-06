@@ -69,7 +69,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/choose_gates_line"
-        tools:listitem="@layout/item_gate" />
+        tools:listitem="@layout/item_gate"
+        android:visibility="invisible"/>
+    <ProgressBar
+        android:id="@+id/gates_progress_par"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/recycler_gates"
+        app:layout_constraintEnd_toEndOf="@id/recycler_gates"
+        app:layout_constraintTop_toTopOf="@id/recycler_gates"
+        app:layout_constraintBottom_toBottomOf="@id/recycler_gates"
+        android:visibility="visible"/>
 
     <TextView
         android:id="@+id/text_choose_car"

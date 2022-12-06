@@ -112,7 +112,7 @@ class SignupFragment : Fragment(R.layout.fragment_signup) {
     }
 
     private fun signUp(){
-        if(isOnline(requireActivity())){
+
             isSignUpClicked = true
             loading(true)
 
@@ -153,25 +153,7 @@ class SignupFragment : Fragment(R.layout.fragment_signup) {
                 preferenceManager.putString(Constants.KEY_USER_NAME, it.name)
                 preferenceManager.putString(Constants.KEY_USER_EMAIL,it.email)
             }
-        }else{
-            val builder = AlertDialog.Builder(requireActivity())
-            builder.setTitle("Error")
-            builder.setMessage("check your internet connection and try again")
-            builder.setCancelable(true)
-            builder.setPositiveButton("reload") { _, _ ->
-                signUp()
-                loading(false)
-            }
 
-            builder.setNegativeButton("exit") { _, _ ->
-                requireActivity().finish()
-                loading(false)
-            }
-            builder.setOnCancelListener { loading(false) }
-
-
-            builder.show()
-        }
     }
     private fun loading(isLoading: Boolean) {
         if (isLoading) {
@@ -208,6 +190,7 @@ class SignupFragment : Fragment(R.layout.fragment_signup) {
             true
         }
     }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean(KEY_IS_SIGNUP_CLICKED,isSignUpClicked)

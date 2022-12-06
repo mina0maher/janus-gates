@@ -129,7 +129,6 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
     private fun signIn(){
 
-        if(isOnline(requireActivity())){
             isLoginClicked = true
             loading(true)
 
@@ -167,30 +166,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             apiViewModel.bodyLiveData.observe(requireActivity()){
                 preferenceManager.putString(KEY_USER_NAME, it.name)
                 preferenceManager.putString(KEY_USER_EMAIL,it.email)
-
             }
-        }else{
-            val builder = AlertDialog.Builder(requireActivity())
-            builder.setTitle("Error")
-            builder.setMessage("check your internet connection and try again")
-            builder.setCancelable(true)
-           // builder.setIcon(R.drawable.ic_no_internet)
-            builder.setPositiveButton("reload") { _, _ ->
-                signIn()
-                loading(false)
-            }
-
-            builder.setNegativeButton("exit") { _, _ ->
-                requireActivity().finish()
-                loading(false)
-            }
-            builder.setOnCancelListener { loading(false) }
-
-
-            builder.show()
-        }
-
-
     }
 
     override fun onDestroy() {
