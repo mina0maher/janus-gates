@@ -6,8 +6,8 @@ import android.app.Activity.RESULT_OK
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.graphics.Color
-import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -196,50 +196,36 @@ class MapsFragment : Fragment() {
     }
 
 
-
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            locationPermissionGranted= true
+            getDeviceLocation()
+            try {
+                googleMap.isMyLocationEnabled = true
+            }catch (e:SecurityException){
+                e.printStackTrace()
+            }
+        }
+        else {
+            locationPermissionGranted =false
+        }
+    }
     private fun getLocationPermission(){
-        val permissions = arrayOf(ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION)
         if(ContextCompat.checkSelfPermission(this.requireContext(),
             ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED||
             ContextCompat.checkSelfPermission(this.requireContext(),
                     ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED){
                     locationPermissionGranted = true
         }else{
-
-            requestPermissions(permissions, 1234)
+            permissionLauncher.launch(ACCESS_FINE_LOCATION)
         }
     }
 
 
 
-    @Deprecated("Deprecated in Java")
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        locationPermissionGranted =false
-        when(requestCode){
-            1234 -> {
-                if(grantResults.isNotEmpty()){
-                    for(i in grantResults){
-                        if(grantResults[i] != PackageManager.PERMISSION_GRANTED){
-                            locationPermissionGranted =false
-                            return
-                        }
-                    }
 
-                    locationPermissionGranted= true
-                    getDeviceLocation()
-                    try {
-                        googleMap.isMyLocationEnabled = true
-                    }catch (e:SecurityException){
-                        e.printStackTrace()
-                    }
-                }
-            }
-        }
-    }
     private fun getDeviceLocation(){
         fusedLocationProviderClient=LocationServices.getFusedLocationProviderClient(this.requireActivity())
         try {
@@ -248,10 +234,9 @@ class MapsFragment : Fragment() {
                 location.addOnCompleteListener {
                     if (it.isSuccessful){
                         val currentLocation = it.result
-                        moveCamera(LatLng(currentLocation.latitude,currentLocation.longitude),15f)
+                        moveCamera(LatLng(currentLocation.latitude,currentLocation.longitude))
                     }else{
-
-
+                        showToast("couldn't get device location",requireContext())
                     }
                 }
             }
@@ -259,7 +244,7 @@ class MapsFragment : Fragment() {
             securityException.printStackTrace()
         }
     }
-    private fun moveCamera(latLng: LatLng, zoom:Float){
+    private fun moveCamera(latLng: LatLng, zoom:Float = 15f){
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom))
     }
 
@@ -306,10 +291,9 @@ class MapsFragment : Fragment() {
                  .include(yourLocationLatLng)
                  .include(whereToLatLng)
                  .build()
-             val point = Point()
 
-                requireActivity().windowManager.defaultDisplay.getSize(point)
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,point.x,600,30))
+                val width: Int = Resources.getSystem().displayMetrics.widthPixels
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,width,600,30))
                 loading(false)
                 if(it.gatesAlongRoute != null) {
                     showToast("gate is ${it.gatesAlongRoute[0].id}",requireContext())
