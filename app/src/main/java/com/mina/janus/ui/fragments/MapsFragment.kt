@@ -9,27 +9,35 @@ import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
@@ -49,6 +57,7 @@ class MapsFragment : Fragment() {
     private lateinit var textWhereto: TextView
     private lateinit var buttonConfirm:Button
     private lateinit var progressBar: ProgressBar
+    private lateinit var buttonYourLocation:LinearLayout
     //vars
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var wheretoMarker: Marker
@@ -60,6 +69,8 @@ class MapsFragment : Fragment() {
     private lateinit var dialog: Dialog
     private var locationPermissionGranted = false
     private val apiViewModel: ApiViewModel by viewModels()
+    private var locationOpened=false
+    private lateinit var currentLocation:Location
 
     private val callback = OnMapReadyCallback { googleMap ->
         this.googleMap=googleMap
@@ -68,44 +79,58 @@ class MapsFragment : Fragment() {
             try {
                 googleMap.isMyLocationEnabled = true
             }catch (e:SecurityException){
-                    Toast.makeText(this.requireContext(),"error",Toast.LENGTH_SHORT).show()
+                Toast.makeText(this.requireContext(),"error",Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun getDirectionsFromLatLng(origin:LatLng, destination:LatLng){
-            if(isOnline(requireContext())) {
-                getDirection(
-                    AddressModel(
-                        "${origin.latitude}, ${origin.longitude}",
-                        "${destination.latitude}, ${destination.longitude}"
-                    )
-                )
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            locationPermissionGranted= true
+            getDeviceLocation()
+            try {
+                googleMap.isMyLocationEnabled = true
+            }catch (e:SecurityException){
+                e.printStackTrace()
+            }
+        }
+        else {
+            locationPermissionGranted =false
+        }
+    }
+
+    private val registration: ActivityResultLauncher<IntentSenderRequest> =
+        this.registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
+            if(it.resultCode== RESULT_OK) {
+                locationOpened = true
+                getDeviceLocation()
+            }
+        }
+
+    private var yourLocationResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val data: Intent? = result.data
+            val place = data?.let { Autocomplete.getPlaceFromIntent(it) }
+            if (isOnline(requireContext())&&place!=null) {
+                textYourLocation.text = place.address
+                if (::yourLocationMarker.isInitialized) {
+                    yourLocationMarker.remove()
+                }
+                yourLocationMarker =
+                    place.latLng?.let { MarkerOptions().position(it).title(place.address) }
+                        ?.let { googleMap.addMarker(it) }!!
+                place.latLng?.let { moveCamera(it, 15f) }
+                yourLocationLatLng = place.latLng!!
+                if (::whereToLatLng.isInitialized) {
+                    getDirectionsFromLatLng(yourLocationLatLng, whereToLatLng)
+                }
             }else{
                 showDialog()
             }
-    }
-    private fun showDialog(){
-        dialog.setContentView(R.layout.no_internet_for_buttons)
-        dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        val textView = dialog.findViewById<TextView>(R.id.textDismiss)
-        val button = dialog.findViewById<Button>(R.id.buttonContact)
-        textView.visibility = View.GONE
-        val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
-        val height = (resources.displayMetrics.heightPixels * 0.80).toInt()
-        button.setOnClickListener { dialog.dismiss() }
-        dialog.setCancelable(true)
-        dialog.window!!.setLayout(width, height)
-        dialog.show()
-    }
+        }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        dialog = Dialog(requireContext())
-        return inflater.inflate(R.layout.fragment_maps, container, false)
     }
     private var whereToResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
@@ -129,29 +154,19 @@ class MapsFragment : Fragment() {
             }
         }
     }
-    private var yourLocationResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val data: Intent? = result.data
-            val place = data?.let { Autocomplete.getPlaceFromIntent(it) }
-            if (isOnline(requireContext())&&place!=null) {
-                textYourLocation.text = place.address
-                if (::yourLocationMarker.isInitialized) {
-                    yourLocationMarker.remove()
-                }
-                yourLocationMarker =
-                    place.latLng?.let { MarkerOptions().position(it).title(place.address) }
-                        ?.let { googleMap.addMarker(it) }!!
-                place.latLng?.let { moveCamera(it, 15f) }
-                yourLocationLatLng = place.latLng!!
-                if (::whereToLatLng.isInitialized) {
-                    getDirectionsFromLatLng(yourLocationLatLng, whereToLatLng)
-                }
-            }
-        }else{
-            showDialog()
-        }
 
+
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        dialog = Dialog(requireContext())
+        return inflater.inflate(R.layout.fragment_maps, container, false)
     }
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
@@ -184,68 +199,52 @@ class MapsFragment : Fragment() {
         }
 
         buttonConfirm.setOnClickListener{
-            val bundle = bundleOf("gatesID" to arr )
-            findNavController().navigate(R.id.action_mapsFragment_to_reservationFragment,bundle)
+            if(isOnline(requireContext())) {
+                val bundle = bundleOf("gatesID" to arr)
+                findNavController().navigate(
+                    R.id.action_mapsFragment_to_reservationFragment,
+                    bundle
+                )
+            }else{
+                showDialog()
+            }
         }
+        buttonYourLocation.setOnClickListener {
+            textYourLocation.text = "your location"
+            if (::yourLocationMarker.isInitialized) {
+                yourLocationMarker.remove()
+            }
+            val currentLocationLatLng = LatLng(currentLocation.latitude,currentLocation.longitude)
+
+            yourLocationMarker = googleMap.addMarker(MarkerOptions().position(currentLocationLatLng).title("your location"))!!
+
+            yourLocationLatLng = currentLocationLatLng
+            if (::whereToLatLng.isInitialized) {
+                getDirectionsFromLatLng(yourLocationLatLng, whereToLatLng)
+            }
+        }
+
+
     }
     private fun initViews(view: View){
         textWhereto =view.findViewById(R.id.textWhereto)
         textYourLocation = view.findViewById(R.id.textYourLocation)
         buttonConfirm = view.findViewById(R.id.buttonConfirm)
         progressBar = view.findViewById(R.id.progressBar)
+        buttonYourLocation = view.findViewById(R.id.buttonYourLocation)
     }
 
-
-    private val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            locationPermissionGranted= true
-            getDeviceLocation()
-            try {
-                googleMap.isMyLocationEnabled = true
-            }catch (e:SecurityException){
-                e.printStackTrace()
+    private fun getDirectionsFromLatLng(origin:LatLng, destination:LatLng){
+            if(isOnline(requireContext())) {
+                getDirection(
+                    AddressModel(
+                        "${origin.latitude}, ${origin.longitude}",
+                        "${destination.latitude}, ${destination.longitude}"
+                    )
+                )
+            }else{
+                showDialog()
             }
-        }
-        else {
-            locationPermissionGranted =false
-        }
-    }
-    private fun getLocationPermission(){
-        if(ContextCompat.checkSelfPermission(this.requireContext(),
-            ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED||
-            ContextCompat.checkSelfPermission(this.requireContext(),
-                    ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED){
-                    locationPermissionGranted = true
-        }else{
-            permissionLauncher.launch(ACCESS_FINE_LOCATION)
-        }
-    }
-
-
-
-
-    private fun getDeviceLocation(){
-        fusedLocationProviderClient=LocationServices.getFusedLocationProviderClient(this.requireActivity())
-        try {
-            if(locationPermissionGranted){
-                val location = fusedLocationProviderClient.lastLocation
-                location.addOnCompleteListener {
-                    if (it.isSuccessful){
-                        val currentLocation = it.result
-                        moveCamera(LatLng(currentLocation.latitude,currentLocation.longitude))
-                    }else{
-                        showToast("couldn't get device location",requireContext())
-                    }
-                }
-            }
-        }catch (securityException:SecurityException){
-            securityException.printStackTrace()
-        }
-    }
-    private fun moveCamera(latLng: LatLng, zoom:Float = 15f){
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom))
     }
 
     private fun getDirection(addressModel: AddressModel) {
@@ -286,11 +285,11 @@ class MapsFragment : Fragment() {
                     }
                 }
                 polylineFinal?.remove()
-             polylineFinal =    polylineOptions?.let {itPolyOptions -> googleMap.addPolyline(itPolyOptions) }
-             val bounds = LatLngBounds.builder()
-                 .include(yourLocationLatLng)
-                 .include(whereToLatLng)
-                 .build()
+                polylineFinal =    polylineOptions?.let {itPolyOptions -> googleMap.addPolyline(itPolyOptions) }
+                val bounds = LatLngBounds.builder()
+                    .include(yourLocationLatLng)
+                    .include(whereToLatLng)
+                    .build()
 
                 val width: Int = Resources.getSystem().displayMetrics.widthPixels
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,width,600,30))
@@ -312,6 +311,120 @@ class MapsFragment : Fragment() {
         }
     }
 
+
+
+
+    private fun showDialog(){
+        dialog.setContentView(R.layout.no_internet_for_buttons)
+        dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        val textView = dialog.findViewById<TextView>(R.id.textDismiss)
+        val button = dialog.findViewById<Button>(R.id.buttonContact)
+        textView.visibility = View.GONE
+        val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
+        val height = (resources.displayMetrics.heightPixels * 0.80).toInt()
+        button.setOnClickListener { dialog.dismiss() }
+        dialog.setCancelable(true)
+        dialog.window!!.setLayout(width, height)
+        dialog.show()
+    }
+
+    private fun createLocationRequest() {
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000)
+            .setWaitForAccurateLocation(true)
+            .setMinUpdateIntervalMillis(3000)
+            .setMaxUpdateDelayMillis(1000)
+            .build()
+
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+            .setAlwaysShow(true)
+
+        val client: SettingsClient = LocationServices.getSettingsClient(requireActivity())
+        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+        task.addOnCompleteListener{
+            try {
+                task.getResult(ApiException::class.java)
+                showToast("try",requireContext())
+
+            }catch (e:ApiException){
+                if(e.statusCode==LocationSettingsStatusCodes.RESOLUTION_REQUIRED){
+
+                    val resolvableApiException =ResolvableApiException(e.status)
+                    val request: IntentSenderRequest = IntentSenderRequest.Builder(
+                        resolvableApiException.resolution.intentSender
+                    ).setFillInIntent(Intent())
+                        .setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION, 0)
+                        .build()
+                    registration.launch(request)
+                }
+                if(e.statusCode==LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE){
+                    showToast("location not available",requireContext())
+                }
+
+
+            }
+        }
+    }
+
+
+    private fun getDeviceLocation(){
+        try {
+            val manager: LocationManager? = getSystemService(requireContext(), LocationManager::class.java )
+
+            if (( !manager!!.isProviderEnabled( LocationManager.GPS_PROVIDER ) )&&!locationOpened ) {
+                createLocationRequest()
+            }else {
+                fusedLocationProviderClient =
+                    LocationServices.getFusedLocationProviderClient(this.requireActivity())
+                if (locationPermissionGranted) {
+                    val location = fusedLocationProviderClient.lastLocation
+                    location.addOnCompleteListener {
+                        if (it.isSuccessful) {
+                            currentLocation = it.result
+                            if(currentLocation!=null) {
+                                moveCamera(
+                                    LatLng(
+                                        currentLocation.latitude,
+                                        currentLocation.longitude
+                                    )
+                                )
+                            }
+                            else{
+                                Thread.sleep(500)
+                                getDeviceLocation()
+                            }
+                        }
+                    }
+                }
+            }
+        }catch (securityException:SecurityException){
+            securityException.printStackTrace()
+        }
+    }
+
+
+
+    private fun getLocationPermission(){
+        if(ContextCompat.checkSelfPermission(this.requireContext(),
+            ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED||
+            ContextCompat.checkSelfPermission(this.requireContext(),
+                    ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED){
+                    locationPermissionGranted = true
+        }else{
+            permissionLauncher.launch(ACCESS_FINE_LOCATION)
+        }
+    }
+
+
+
+
+
+    private fun moveCamera(latLng: LatLng, zoom:Float = 15f){
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom))
+    }
+
+
+
     private fun loading(isLoading:Boolean){
         if(isLoading){
             buttonConfirm.visibility=View.INVISIBLE
@@ -321,6 +434,7 @@ class MapsFragment : Fragment() {
             progressBar.visibility=View.INVISIBLE
         }
     }
+
     private fun decodePoly(encoded: String): List<LatLng> {
         val poly: MutableList<LatLng> = ArrayList()
         var index = 0
@@ -355,6 +469,17 @@ class MapsFragment : Fragment() {
         }
         return poly
     }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        apiViewModel.directionsBodyLiveData.removeObservers(requireActivity())
+        apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
+    }
+
+
+
+
 
 
 }

@@ -33,18 +33,25 @@
         android:layout_marginTop="-40dp"
         android:padding="@dimen/_15sdp"
         >
+<LinearLayout
+    android:id="@+id/linearLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    app:layout_constraintTop_toTopOf="parent"
 
+    >
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="@dimen/_5sdp"
+            android:layout_marginEnd="@dimen/_8sdp"
             app:boxCornerRadiusTopStart="@dimen/_25sdp"
             app:boxCornerRadiusTopEnd="@dimen/_25sdp"
             app:boxCornerRadiusBottomStart="@dimen/_25sdp"
             app:boxCornerRadiusBottomEnd="@dimen/_25sdp"
+            android:layout_weight="1"
             >
 
             <com.google.android.material.textfield.TextInputEditText
@@ -57,14 +64,34 @@
                 android:maxLines="2"
                 />
         </com.google.android.material.textfield.TextInputLayout>
+<LinearLayout
+    android:id="@+id/buttonYourLocation"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_gravity="center"
+    >
 
+    <ImageView
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_my_location" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="your location"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_8ssp"/>
+</LinearLayout>
+</LinearLayout>
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayout3"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_10sdp"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayout"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout"
             tools:layout_editor_absoluteX="19dp"
             app:boxCornerRadiusTopStart="@dimen/_25sdp"
             app:boxCornerRadiusTopEnd="@dimen/_25sdp"
