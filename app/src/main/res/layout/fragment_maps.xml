@@ -144,7 +144,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_20sdp"
             android:layout_marginBottom="@dimen/_20sdp"
-
             android:text="or choose gates manually"
             android:textColor="@color/black"
             android:textSize="@dimen/_12ssp"

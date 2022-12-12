@@ -55,6 +55,7 @@ class MapsFragment : Fragment() {
     private lateinit var googleMap: GoogleMap
     private lateinit var textYourLocation:TextView
     private lateinit var textWhereto: TextView
+    private lateinit var textChooseGates:TextView
     private lateinit var buttonConfirm:Button
     private lateinit var progressBar: ProgressBar
     private lateinit var buttonYourLocation:LinearLayout
@@ -223,6 +224,9 @@ class MapsFragment : Fragment() {
                 getDirectionsFromLatLng(yourLocationLatLng, whereToLatLng)
             }
         }
+        textChooseGates.setOnClickListener{
+            findNavController().navigate(R.id.action_mapsFragment_to_reservationFragment)
+        }
 
 
     }
@@ -232,6 +236,7 @@ class MapsFragment : Fragment() {
         buttonConfirm = view.findViewById(R.id.buttonConfirm)
         progressBar = view.findViewById(R.id.progressBar)
         buttonYourLocation = view.findViewById(R.id.buttonYourLocation)
+        textChooseGates = view.findViewById(R.id.textChooseGates)
     }
 
     private fun getDirectionsFromLatLng(origin:LatLng, destination:LatLng){
@@ -295,11 +300,16 @@ class MapsFragment : Fragment() {
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,width,600,30))
                 loading(false)
                 if(it.gatesAlongRoute != null) {
-                    showToast("gate is ${it.gatesAlongRoute[0].id}",requireContext())
-                    arr = IntArray(it.gatesAlongRoute.size)
-                    for (i in arr!!){
-                        arr!![i] = it.gatesAlongRoute[i].id!!
+                    if(it.gatesAlongRoute.isNotEmpty()) {
+                        showToast("gate is ${it.gatesAlongRoute[0].id}", requireContext())
+                        arr = IntArray(it.gatesAlongRoute.size)
+                        for (i in arr!!) {
+                            arr!![i] = it.gatesAlongRoute[i].id!!
+                        }
+                    }else{
+                        arr = null
                     }
+
                 }else{
                     arr = null
                 }

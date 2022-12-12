@@ -29,20 +29,21 @@ private var array :IntArray?=null
         gatesRecyclerView = view.findViewById(R.id.recycler_gates)
         gatesProgressPar = view.findViewById(R.id.gates_progress_par)
         arguments?.let { array = it.getIntArray("gatesID") }
-        showToast(array!![0].toString(),requireContext())
         apiViewModel.getAllGates()
         gatesLoading(true)
         apiViewModel.gatesBodyLiveData.observe(requireActivity()){
             gatesModel = it
-            for(i in array!!){
-                for((k, j) in it.withIndex()){
-                    if(i==j.id){
-                         gatesModel!![k].isChecked=true
+            if(array!=null) {
+                for (i in array!!) {
+                    for ((k, j) in it.withIndex()) {
+                        if (i == j.id) {
+                            gatesModel!![k].isChecked = true
+                        }
                     }
                 }
             }
             gatesRecyclerView.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
-            gatesRecyclerView.adapter = GatesAdapter(it,requireContext())
+            gatesRecyclerView.adapter = GatesAdapter(gatesModel!!,requireContext())
             gatesLoading(false)
         }
         apiViewModel.codesLiveData.observe(requireActivity()){
