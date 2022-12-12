@@ -13,16 +13,18 @@
         android:id="@+id/item_car_layout"
         android:layout_width="@dimen/_230sdp"
         android:layout_height="@dimen/_60sdp"
-        android:padding="@dimen/_8sdp"
+        android:padding="@dimen/_10sdp"
         >
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/carImage"
-        android:layout_width="@dimen/_45sdp"
-        android:layout_height="@dimen/_45sdp"
-        android:background="@drawable/getstarted"
-        android:scaleType="centerCrop"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/carImage"
+            android:layout_width="@dimen/_45sdp"
+            android:layout_height="@dimen/_45sdp"
+            android:background="@drawable/getstarted"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     <View
         android:id="@+id/viewSupporter"
         android:layout_width="1dp"
