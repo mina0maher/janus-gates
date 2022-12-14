@@ -114,7 +114,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/choose_car_line"
-        tools:listitem="@layout/item_car" />
+        tools:listitem="@layout/item_car"
+        android:visibility="invisible"/>
+    <ProgressBar
+        android:id="@+id/cars_progress_par"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/recycler_cars"
+        app:layout_constraintEnd_toEndOf="@id/recycler_cars"
+        app:layout_constraintTop_toTopOf="@id/recycler_cars"
+        app:layout_constraintBottom_toBottomOf="@id/recycler_cars"
+        android:visibility="visible"/>
 
     <TextView
         android:id="@+id/text_total"

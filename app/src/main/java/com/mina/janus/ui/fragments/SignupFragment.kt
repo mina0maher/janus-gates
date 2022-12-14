@@ -145,10 +145,14 @@ class SignupFragment : Fragment(R.layout.fragment_signup) {
                 }
                 loading(false)
             }
+        apiViewModel.jsessionidLiveData.observe(requireActivity()){
+            preferenceManager.putString(Constants.KEY_JSESSOIONID,it)
+        }
             apiViewModel.errorMessageLiveData.observe(requireActivity()) {
                 showToast(it,requireContext())
                 loading(false)
             }
+
             apiViewModel.bodyLiveData.observe(requireActivity()){
                 preferenceManager.putString(Constants.KEY_USER_NAME, it.name)
                 preferenceManager.putString(Constants.KEY_USER_EMAIL,it.email)

@@ -1,18 +1,10 @@
 package com.mina.janus.viewmodles
 
 
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.PolylineOptions
-import com.mina.janus.R
 import com.mina.janus.apis.RetrofitFactory
 import com.mina.janus.models.*
-import com.mina.janus.utilities.Constants
-import okhttp3.ResponseBody
-import org.json.JSONException
-import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Response
 
@@ -39,6 +31,14 @@ class ApiViewModel : ViewModel() {
     val gatesBodyLiveData:LiveData<GatesModel>
         get() = gatesBodyMD
 
+    var carBodyMD: SingleLiveEvent<CarModel> = SingleLiveEvent()
+    val carBodyLiveData:LiveData<CarModel>
+        get() = carBodyMD
+
+    var jsessionidMD: SingleLiveEvent<String> = SingleLiveEvent()
+    val jsessionidLiveData:LiveData<String>
+        get() = jsessionidMD
+
     fun signIn(userLoginModel: UserLoginModel){
          RetrofitFactory.apiInterface().logIn(userLoginModel)
              .enqueue(object :retrofit2.Callback<UserRegisterModel>{
@@ -46,6 +46,10 @@ class ApiViewModel : ViewModel() {
                 call: Call<UserRegisterModel>,
                 response: Response<UserRegisterModel>
             ) {
+                val cookieList = response.headers().values("Set-Cookie")
+                val jsessionid = cookieList[0].split(";").toTypedArray()[0]
+                jsessionidMD.postValue(jsessionid)
+
                 codesMD.postValue(response.code())
 
                 if(response.code()==200) {
@@ -66,6 +70,9 @@ class ApiViewModel : ViewModel() {
                     call: Call<UserRegisterModel>,
                     response: Response<UserRegisterModel>
                 ) {
+                    val cookieList = response.headers().values("Set-Cookie")
+                    val jsessionid = cookieList[0].split(";").toTypedArray()[0]
+                    jsessionidMD.postValue(jsessionid)
                     codesMD.postValue(response.code())
                     if(response.code()==200){
                         registerBodyMD.postValue(response.body())
@@ -105,6 +112,22 @@ class ApiViewModel : ViewModel() {
                 }
 
                 override fun onFailure(call: Call<GatesModel>, t: Throwable) {
+                    errorMessageMD.postValue(t.message.toString())
+                }
+
+            })
+    }
+    fun getCars(sessionId:String){
+        RetrofitFactory.apiInterface().getCars(sessionId)
+            .enqueue(object :retrofit2.Callback<CarModel>{
+                override fun onResponse(call: Call<CarModel>, response: Response<CarModel>) {
+                    codesMD.postValue(response.code())
+                    if(response.code()==200){
+                        carBodyMD.postValue(response.body())
+                    }
+                }
+
+                override fun onFailure(call: Call<CarModel>, t: Throwable) {
                     errorMessageMD.postValue(t.message.toString())
                 }
 

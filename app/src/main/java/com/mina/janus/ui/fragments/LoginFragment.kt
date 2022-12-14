@@ -159,6 +159,9 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                     }
                 }
             }
+        apiViewModel.jsessionidLiveData.observe(requireActivity()){
+            preferenceManager.putString(Constants.KEY_JSESSOIONID,it)
+        }
             apiViewModel.errorMessageLiveData.observe(requireActivity()) {
                 showToast(it,requireContext())
                 loading(false)

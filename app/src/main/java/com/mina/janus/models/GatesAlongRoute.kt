@@ -10,5 +10,5 @@ data class GatesAlongRoute(
     val prices: List<Price>?,
     val imageUrl:String?,
     @Expose(serialize = false, deserialize = false)
-    var isChecked:Boolean?
+    var isChecked:Boolean=false
 )

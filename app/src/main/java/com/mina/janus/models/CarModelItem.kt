@@ -10,5 +10,5 @@ data class CarModelItem(
     val ownerId: Int?,
     val type: VehicleType?,
     @Expose(serialize = false, deserialize = false)
-    var isChecked:Boolean?
+    var isChecked:Boolean=false
 )

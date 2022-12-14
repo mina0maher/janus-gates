@@ -38,13 +38,13 @@ class GatesAdapter(private val list:ArrayList<GatesAlongRoute>,private val conte
         fun setData(gate:GatesAlongRoute,context : Context){
             gateName.text = gate.name
             gateInfo.text=gate.address
-            if(gate.isChecked == true){
+            if(gate.isChecked){
                 gateCheck.visibility= View.VISIBLE
                 layout.setBackgroundResource(R.drawable.item_gate_background)
             }
             Glide.with(View(context)).load(gate.imageUrl).into(gateImage)
             layout.setOnClickListener{
-                if(gate.isChecked == false){
+                if(!gate.isChecked){
                     gateCheck.visibility= View.VISIBLE
                     layout.setBackgroundResource(R.drawable.item_gate_background)
                     gate.isChecked=true

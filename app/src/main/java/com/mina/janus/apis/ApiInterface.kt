@@ -5,6 +5,7 @@ import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 
 interface ApiInterface {
@@ -19,4 +20,7 @@ interface ApiInterface {
 
     @GET("gates")
     fun getGates():Call<GatesModel>
+
+    @GET("vehicles")
+    fun getCars(@Header("Cookie")sessionId:String):Call<CarModel>
 }

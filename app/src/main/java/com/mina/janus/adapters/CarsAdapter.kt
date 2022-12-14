@@ -15,6 +15,7 @@ import com.mina.janus.models.CarModelItem
 import de.hdodenhof.circleimageview.CircleImageView
 
 class CarsAdapter (private  val carsList:ArrayList<CarModelItem>,private val context: Context):RecyclerView.Adapter<RecyclerView.ViewHolder>(){
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if(viewType== NORMAL_VIEW_TYPE){
             NormalViewHolder(
@@ -51,7 +52,7 @@ class CarsAdapter (private  val carsList:ArrayList<CarModelItem>,private val con
 
 
     class AddViewHolder(view: View): RecyclerView.ViewHolder(view){
-        private val addLayout :LinearLayout = view.findViewById(R.id.add_layout)
+       // private val addLayout :LinearLayout = view.findViewById(R.id.add_layout)
     }
     class NormalViewHolder(view: View):RecyclerView.ViewHolder(view){
         private val layout : ConstraintLayout = itemView.findViewById(R.id.item_car_layout)
@@ -65,12 +66,12 @@ class CarsAdapter (private  val carsList:ArrayList<CarModelItem>,private val con
             carName.text = item.name
             carNumber.text = item.licensePlate
             carModel.text=item.type.name
-            if(item.isChecked == true){
+            if(item.isChecked){
                 carCheck.visibility= View.VISIBLE
                 layout.setBackgroundResource(R.drawable.item_gate_background)
             }
             layout.setOnClickListener{
-                if(item.isChecked == false){
+                if(!item.isChecked){
                     carCheck.visibility= View.VISIBLE
                     layout.setBackgroundResource(R.drawable.item_gate_background)
                     item.isChecked=true

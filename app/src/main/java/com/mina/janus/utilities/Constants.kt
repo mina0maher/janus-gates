@@ -10,7 +10,7 @@ object Constants {
     const val KEY_IS_SIGNED_IN = "isSignedIn"
     const val KEY_USER_NAME="userName"
     const val KEY_USER_EMAIL="userEmail"
-
+    const val KEY_JSESSOIONID="jsessionid"
     const val KEY_PREFERENCE_NAME = "marketXPreference"
     const val KEY_HOME_SAVED_INSTANCE = "homeSavedInstance"
     const val KEY_PRODUCT_SAVED_INSTANCE = "productSavedInstance"
