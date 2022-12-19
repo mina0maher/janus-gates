@@ -48,6 +48,7 @@ import com.mina.janus.utilities.Constants.isOnline
 import com.mina.janus.utilities.Constants.showToast
 import com.mina.janus.viewmodles.ApiViewModel
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MapsFragment : Fragment() {
@@ -63,6 +64,7 @@ class MapsFragment : Fragment() {
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var wheretoMarker: Marker
     private lateinit var yourLocationMarker: Marker
+    private val gatesMarkers=ArrayList<Marker>()
     private lateinit var  yourLocationLatLng:LatLng
     private lateinit var  whereToLatLng:LatLng
     private var polylineFinal: Polyline? = null
@@ -71,7 +73,7 @@ class MapsFragment : Fragment() {
     private var locationPermissionGranted = false
     private val apiViewModel: ApiViewModel by viewModels()
     private var locationOpened=false
-    private lateinit var currentLocation:Location
+    private  var currentLocation:Location?=null
 
     private val callback = OnMapReadyCallback { googleMap ->
         this.googleMap=googleMap
@@ -215,7 +217,7 @@ class MapsFragment : Fragment() {
             if (::yourLocationMarker.isInitialized) {
                 yourLocationMarker.remove()
             }
-            val currentLocationLatLng = LatLng(currentLocation.latitude,currentLocation.longitude)
+            val currentLocationLatLng = LatLng(currentLocation!!.latitude,currentLocation!!.longitude)
 
             yourLocationMarker = googleMap.addMarker(MarkerOptions().position(currentLocationLatLng).title("your location"))!!
 
@@ -299,12 +301,25 @@ class MapsFragment : Fragment() {
                 val width: Int = Resources.getSystem().displayMetrics.widthPixels
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,width,600,30))
                 loading(false)
+
+                for(marker in  gatesMarkers){
+                    marker.remove()
+                }
                 if(it.gatesAlongRoute != null) {
                     if(it.gatesAlongRoute.isNotEmpty()) {
                         showToast("gate is ${it.gatesAlongRoute[0].id}", requireContext())
                         arr = IntArray(it.gatesAlongRoute.size)
                         for (i in arr!!) {
                             arr!![i] = it.gatesAlongRoute[i].id!!
+                        }
+                        for(gate in it.gatesAlongRoute){
+                            gatesMarkers.add(googleMap.addMarker(MarkerOptions().position(
+                                LatLng(
+                                    gate.location!!.latitude!!,
+                                    gate.location.longitude!!
+                                )
+                            ).title(gate.name)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)))!!)
                         }
                     }else{
                         arr = null
@@ -339,7 +354,7 @@ class MapsFragment : Fragment() {
     }
 
     private fun createLocationRequest() {
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000)
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 50000)
             .setWaitForAccurateLocation(true)
             .setMinUpdateIntervalMillis(3000)
             .setMaxUpdateDelayMillis(1000)
@@ -394,8 +409,8 @@ class MapsFragment : Fragment() {
                             if(currentLocation!=null) {
                                 moveCamera(
                                     LatLng(
-                                        currentLocation.latitude,
-                                        currentLocation.longitude
+                                        currentLocation!!.latitude,
+                                        currentLocation!!.longitude
                                     )
                                 )
                             }

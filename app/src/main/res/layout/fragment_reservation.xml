@@ -130,7 +130,7 @@
         android:id="@+id/text_total"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Total : 35 EGP"
+        android:text="Total : 0 EGP"
         android:textColor="@color/grey"
         android:textSize="@dimen/_13ssp"
         android:textStyle="bold"
