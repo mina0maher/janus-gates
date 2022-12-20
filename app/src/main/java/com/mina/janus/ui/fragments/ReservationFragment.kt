@@ -1,13 +1,18 @@
 package com.mina.janus.ui.fragments
 
+import android.app.Dialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.mina.janus.R
@@ -16,7 +21,9 @@ import com.mina.janus.adapters.GatesAdapter
 import com.mina.janus.listeners.CarsListener
 import com.mina.janus.listeners.GatesListener
 import com.mina.janus.models.CarModelItem
+import com.mina.janus.models.GatesAlongRoute
 import com.mina.janus.models.GatesModel
+import com.mina.janus.models.TicketPostModel
 import com.mina.janus.utilities.Constants
 import com.mina.janus.utilities.Constants.showToast
 import com.mina.janus.utilities.PreferenceManager
@@ -30,12 +37,18 @@ private var array :IntArray?=null
     private lateinit var gatesProgressPar:ProgressBar
     private lateinit var carsRecyclerView: RecyclerView
     private lateinit var carsProgressPar:ProgressBar
+    private lateinit var payNowButton:Button
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var totalTextView: TextView
     private lateinit var gatesAdapter: GatesAdapter
     private lateinit var carsAdapter: CarsAdapter
     private var checkedCar:CarModelItem?=null
     private var checkedGates:GatesModel = GatesModel()
+    private var ticketText:String = ""
+    private var ticketCounter = 0
+    private lateinit var dialog: Dialog
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -47,7 +60,9 @@ private var array :IntArray?=null
         carsRecyclerView = view.findViewById(R.id.recycler_cars)
         carsProgressPar = view.findViewById(R.id.cars_progress_par)
         totalTextView = view.findViewById(R.id.text_total)
+        payNowButton = view.findViewById(R.id.button_pay)
         arguments?.let { array = it.getIntArray("gatesID") }
+        dialog = Dialog(requireContext())
         apiViewModel.getAllGates()
         gatesLoading(true)
         apiViewModel.gatesBodyLiveData.observe(requireActivity()){
@@ -81,9 +96,30 @@ apiViewModel.codesLiveData.observe(requireActivity()){
         }
 
 
+        payNowButton.setOnClickListener{
+            if(checkedCar != null && checkedGates.isNotEmpty()){
+                for(gate in checkedGates){
+                    ticketCounter++
+                    apiViewModel.reserveTicket(preferenceManager.getString(Constants.KEY_JSESSOIONID)!!,getTicketInfo(gate,checkedCar!!))
+                }
+            }
+        }
+        apiViewModel.ticketBodyLiveData.observe(requireActivity()){
+            ticketText+= "1 * ${it.gate!!.name} = ${it.paidPrice} \n"
+            showToast("$ticketCounter    ${checkedGates.size-1}",requireContext())
+            if(ticketCounter==checkedGates.size){
+                openConfirmationDialog(ticketText)
+            }
+        }
+
+
+
         return view
     }
 
+    private fun getTicketInfo(gate:GatesAlongRoute,car:CarModelItem):TicketPostModel{
+        return TicketPostModel(gate.name,car.licensePlate,car.type!!.name)
+    }
 
     private fun gatesLoading(isLoading:Boolean){
         if(isLoading){
@@ -133,4 +169,22 @@ private fun getTolls(checkedGates:GatesModel, checkedCar:CarModelItem?):Double{
     }
     return tolls
 }
+    private fun openConfirmationDialog(text:String) {
+        dialog.setContentView(R.layout.confirmation_dialog_layout)
+        dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        val textView: TextView = dialog.findViewById(R.id.textDismiss)
+        val ticketsText: TextView = dialog.findViewById(R.id.ticket_text)
+        ticketsText.text=text
+        val button: Button = dialog.findViewById(R.id.buttonContact)
+        textView.setOnClickListener { dialog.dismiss() }
+        button.setOnClickListener {
+            dialog.dismiss()
+            findNavController().popBackStack()
+        }
+        val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
+        val height = (resources.displayMetrics.heightPixels * 0.80).toInt()
+        dialog.window!!.setLayout(width, height)
+        dialog.setCancelable(false)
+        dialog.show()
+    }
 }

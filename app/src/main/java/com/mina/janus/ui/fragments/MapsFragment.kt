@@ -330,7 +330,7 @@ class MapsFragment : Fragment() {
                 }
             }
         }
-        apiViewModel.errorMessageMD.observe(requireActivity()){
+        apiViewModel.errorMessageLiveData.observe(requireActivity()){
             loading(false)
             showToast(it,requireContext())
         }

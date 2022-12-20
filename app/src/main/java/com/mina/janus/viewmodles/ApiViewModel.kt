@@ -11,33 +11,37 @@ import retrofit2.Response
 class ApiViewModel : ViewModel() {
 
 
-     var codesMD: SingleLiveEvent<Int> = SingleLiveEvent()
+     private var codesMD: SingleLiveEvent<Int> = SingleLiveEvent()
      val codesLiveData:LiveData<Int>
           get() = codesMD
 
-    var registerBodyMD: SingleLiveEvent<UserRegisterModel> = SingleLiveEvent()
+    private var registerBodyMD: SingleLiveEvent<UserRegisterModel> = SingleLiveEvent()
     val bodyLiveData:LiveData<UserRegisterModel>
         get() = registerBodyMD
 
-    var errorMessageMD: SingleLiveEvent<String> = SingleLiveEvent()
+    private var errorMessageMD: SingleLiveEvent<String> = SingleLiveEvent()
     val errorMessageLiveData:LiveData<String>
         get() = errorMessageMD
 
-    var directionsBodyMD: SingleLiveEvent<DirectionsModel> = SingleLiveEvent()
+    private var directionsBodyMD: SingleLiveEvent<DirectionsModel> = SingleLiveEvent()
     val directionsBodyLiveData:LiveData<DirectionsModel>
         get() = directionsBodyMD
 
-    var gatesBodyMD: SingleLiveEvent<GatesModel> = SingleLiveEvent()
+    private var gatesBodyMD: SingleLiveEvent<GatesModel> = SingleLiveEvent()
     val gatesBodyLiveData:LiveData<GatesModel>
         get() = gatesBodyMD
 
-    var carBodyMD: SingleLiveEvent<CarModel> = SingleLiveEvent()
+    private var carBodyMD: SingleLiveEvent<CarModel> = SingleLiveEvent()
     val carBodyLiveData:LiveData<CarModel>
         get() = carBodyMD
 
-    var jsessionidMD: SingleLiveEvent<String> = SingleLiveEvent()
+    private var jsessionidMD: SingleLiveEvent<String> = SingleLiveEvent()
     val jsessionidLiveData:LiveData<String>
         get() = jsessionidMD
+
+    private var ticketBodyMD: SingleLiveEvent<TicketsResponseModel> = SingleLiveEvent()
+    val ticketBodyLiveData:LiveData<TicketsResponseModel>
+        get() = ticketBodyMD
 
     fun signIn(userLoginModel: UserLoginModel){
          RetrofitFactory.apiInterface().logIn(userLoginModel)
@@ -128,6 +132,25 @@ class ApiViewModel : ViewModel() {
                 }
 
                 override fun onFailure(call: Call<CarModel>, t: Throwable) {
+                    errorMessageMD.postValue(t.message.toString())
+                }
+
+            })
+    }
+    fun reserveTicket(sessionId:String,ticketPostModel: TicketPostModel){
+        RetrofitFactory.apiInterface().reserveTicket(sessionId,ticketPostModel)
+            .enqueue(object :retrofit2.Callback<TicketsResponseModel>{
+                override fun onResponse(
+                    call: Call<TicketsResponseModel>,
+                    response: Response<TicketsResponseModel>
+                ) {
+                    codesMD.postValue(response.code())
+                    if(response.code()==200){
+                        ticketBodyMD.postValue(response.body())
+                    }
+                }
+
+                override fun onFailure(call: Call<TicketsResponseModel>, t: Throwable) {
                     errorMessageMD.postValue(t.message.toString())
                 }
 

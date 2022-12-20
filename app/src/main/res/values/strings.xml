@@ -11,6 +11,8 @@
     <string name="sing_up">Sing Up</string>
     <string name="name">Name</string>
     <string name="google_maps_api_key">AIzaSyBJMDGZL3iNE2n-kUYQJYM3J0whIWGupaM</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="exit">Exit</string>
+    <string name="successfully_booked">Successfully booked</string>
+    <string name="we_will_contact_you_soon">We will <b>contact</b> you soon.\n\nkindly note we will <b>contact</b> with you in the <b><i>next hours.</i></b>\n\nif the payment <b>isn\'t</b> made within <b><i>two days</i></b> it will be <b>cancelled</b>.\n\n<b>Do you want to <i>Contact Us</i> first?</b></string>
+    <string name="dismiss">Dismiss</string>
 </resources>

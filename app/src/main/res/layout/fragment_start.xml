@@ -26,7 +26,7 @@
         android:layout_height="@dimen/_200sdp"
         android:cropToPadding="true"
         android:scaleType="centerInside"
-        android:src="@drawable/getstarted"
+        android:src="@drawable/janus"
         android:transitionName="image_big"
         app:layout_constraintBottom_toTopOf="@+id/frameLayout"
         app:layout_constraintEnd_toEndOf="parent"

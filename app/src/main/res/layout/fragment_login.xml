@@ -133,12 +133,13 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/_120sdp"
         android:cropToPadding="true"
-        android:scaleType="centerInside"
-        android:src="@drawable/getstarted"
+        android:scaleType="fitCenter"
+        android:src="@drawable/janus"
         android:transitionName="image_small"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        android:padding="@dimen/_10sdp"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

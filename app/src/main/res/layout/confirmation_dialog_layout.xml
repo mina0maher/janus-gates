@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_gravity="center"
-    android:padding="@dimen/_30sdp"
     >
 
     <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -18,7 +17,7 @@
         android:elevation="@dimen/_20sdp"
         >
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="@dimen/_20sdp"
             >
@@ -26,9 +25,9 @@
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Error"
+                android:text="@string/successfully_booked"
                 android:textSize="@dimen/_20ssp"
-                android:textColor="#e53935"
+                android:textColor="@color/green"
                 android:textStyle="bold"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -37,7 +36,8 @@
                 android:id="@+id/imageView"
                 android:layout_width="@dimen/_80sdp"
                 android:layout_height="@dimen/_80sdp"
-                android:src="@drawable/ic_no_internet"
+                android:src="@drawable/ic_complete"
+                app:tint="@color/green"
                 android:layout_marginTop="@dimen/_20sdp"
                 app:layout_constraintTop_toBottomOf="@id/title"
                 app:layout_constraintStart_toStartOf="parent"
@@ -49,7 +49,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_20sdp"
-                android:text="Check your internet"
+                android:text=""
                 android:textColor="@color/primary_text"
                 android:textSize="@dimen/_15sdp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -60,9 +60,9 @@
                 android:id="@+id/buttonContact"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_50sdp"
-                android:backgroundTint="#e53935"
+                android:backgroundTint="@color/green"
                 android:elevation="@dimen/_50sdp"
-                android:text="Try Again"
+                android:text="see gates"
                 android:textColor="@color/white"
                 android:textSize="@dimen/_13ssp"
                 android:textStyle="bold"
@@ -74,14 +74,13 @@
                 app:strokeColor="@color/gray1"
                 app:strokeWidth="1dp"
                 android:layout_marginTop="@dimen/_15sdp"
-
                 />
 
             <TextView
                 android:id="@+id/textDismiss"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="dismiss"
+                android:text="@string/dismiss"
                 android:textColor="@color/secondary_text"
                 android:textSize="@dimen/_15sdp"
                 android:layout_marginTop="@dimen/_10sdp"

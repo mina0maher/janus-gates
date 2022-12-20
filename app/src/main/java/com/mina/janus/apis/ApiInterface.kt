@@ -1,7 +1,6 @@
 package com.mina.janus.apis
 
 import com.mina.janus.models.*
-import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -9,6 +8,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 
 interface ApiInterface {
+
     @POST("auth/login")
     fun logIn(@Body userSignInModel: UserLoginModel): Call<UserRegisterModel>
 
@@ -23,4 +23,9 @@ interface ApiInterface {
 
     @GET("vehicles")
     fun getCars(@Header("Cookie")sessionId:String):Call<CarModel>
+
+    @POST("tickets")
+    fun reserveTicket(@Header("Cookie")sessionId:String,@Body ticketPostModel: TicketPostModel):Call<TicketsResponseModel>
+
+
 }
