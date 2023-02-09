@@ -27,5 +27,8 @@ interface ApiInterface {
     @POST("tickets")
     fun reserveTicket(@Header("Cookie")sessionId:String,@Body ticketPostModel: TicketPostModel):Call<TicketsResponseModel>
 
+    @POST("routes")
+    fun getRoute(@Body addressModel: AddressModel):Call<RoutesModel>
+
 
 }

@@ -256,80 +256,133 @@ class MapsFragment : Fragment() {
 
     private fun getDirection(addressModel: AddressModel) {
         loading(true)
-        apiViewModel.getDirections(addressModel)
-        apiViewModel.directionsBodyLiveData.observe(requireActivity()) {
-            val status = it.directionsResult?.geocodedWaypoints?.get(0)?.geocoderStatus
-            if (status == "OK") {
-                val routes = it.directionsResult.routes
-                var points: ArrayList<LatLng?>
-                var polylineOptions: PolylineOptions? = null
-                if (routes != null) {
-                    for (i in routes.indices) {
-                        points = ArrayList()
-                        polylineOptions = PolylineOptions()
-                        val legs = routes[i].legs
-                        if (legs != null) {
-                            for (j in legs.indices) {
-                                val steps = legs[j].steps
-                                if (steps != null) {
-                                    for (k in steps.indices) {
-                                        val polyline = steps[k].polyline?.encodedPath
-                                        val list = polyline?.let { it1 -> decodePoly(it1) }
-                                        if (list != null) {
-                                            for (l in list.indices) {
-                                                val position = LatLng(list[l].latitude, list[l].longitude)
-                                                points.add(position)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        polylineOptions.addAll(points)
+//        apiViewModel.getDirections(addressModel)
+//        apiViewModel.directionsBodyLiveData.observe(requireActivity()) {
+//            val status = it.directionsResult?.geocodedWaypoints?.get(0)?.geocoderStatus
+//            if (status == "OK") {
+//                val routes = it.directionsResult.routes
+//                var points: ArrayList<LatLng?>
+//                var polylineOptions: PolylineOptions? = null
+//                if (routes != null) {
+//                    for (i in routes.indices) {
+//                        points = ArrayList()
+//                        polylineOptions = PolylineOptions()
+//                        val legs = routes[i].legs
+//                        if (legs != null) {
+//                            for (j in legs.indices) {
+//                                val steps = legs[j].steps
+//                                if (steps != null) {
+//                                    for (k in steps.indices) {
+//                                        val polyline = steps[k].polyline?.encodedPath
+//                                        val list = polyline?.let { it1 -> decodePoly(it1) }
+//                                        if (list != null) {
+//                                            for (l in list.indices) {
+//                                                val position = LatLng(list[l].latitude, list[l].longitude)
+//                                                points.add(position)
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                        polylineOptions.addAll(points)
+//                        polylineOptions.width(15f)
+//                        polylineOptions.color(ContextCompat.getColor(requireContext(), R.color.red))
+//                        polylineOptions.geodesic(true)
+//                    }
+//                }
+//                polylineFinal?.remove()
+//                polylineFinal =    polylineOptions?.let {itPolyOptions -> googleMap.addPolyline(itPolyOptions) }
+//                val bounds = LatLngBounds.builder()
+//                    .include(yourLocationLatLng)
+//                    .include(whereToLatLng)
+//                    .build()
+//
+//                val width: Int = Resources.getSystem().displayMetrics.widthPixels
+//                googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,width,600,30))
+//                loading(false)
+//
+//                for(marker in  gatesMarkers){
+//                    marker.remove()
+//                }
+//                if(it.gatesAlongRoute != null) {
+//                    if(it.gatesAlongRoute.isNotEmpty()) {
+//                        showToast("gate is ${it.gatesAlongRoute[0].id}", requireContext())
+//                        arr = IntArray(it.gatesAlongRoute.size)
+//                        for (i in arr!!) {
+//                            arr!![i] = it.gatesAlongRoute[i].id!!
+//                        }
+//                        for(gate in it.gatesAlongRoute){
+//                            gatesMarkers.add(googleMap.addMarker(MarkerOptions().position(
+//                                LatLng(
+//                                    gate.location!!.latitude!!,
+//                                    gate.location.longitude!!
+//                                )
+//                            ).title(gate.name)
+//                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)))!!)
+//                        }
+//                    }else{
+//                        arr = null
+//                    }
+//
+//                }else{
+//                    arr = null
+//                }
+//            }
+//        }
+        //////////////////////////////////
+        apiViewModel.getRoute(addressModel)
+        apiViewModel.routesBodyLiveData.observe(requireActivity()) {
+
+
+                val polylineOptions = PolylineOptions()
+
+
+                        polylineOptions.addAll(decodePoly(it!!.routesResponse!!.polyline!!.encodedPath!!))
                         polylineOptions.width(15f)
                         polylineOptions.color(ContextCompat.getColor(requireContext(), R.color.red))
                         polylineOptions.geodesic(true)
-                    }
-                }
-                polylineFinal?.remove()
-                polylineFinal =    polylineOptions?.let {itPolyOptions -> googleMap.addPolyline(itPolyOptions) }
-                val bounds = LatLngBounds.builder()
-                    .include(yourLocationLatLng)
-                    .include(whereToLatLng)
-                    .build()
+                        polylineFinal?.remove()
+                        polylineFinal =    polylineOptions.let {itPolyOptions -> googleMap.addPolyline(itPolyOptions) }
+                        val bounds = LatLngBounds.builder()
+                            .include(yourLocationLatLng)
+                            .include(whereToLatLng)
+                            .build()
 
-                val width: Int = Resources.getSystem().displayMetrics.widthPixels
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,width,600,30))
-                loading(false)
+                        val width: Int = Resources.getSystem().displayMetrics.widthPixels
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,width,600,30))
+                        loading(false)
 
-                for(marker in  gatesMarkers){
-                    marker.remove()
-                }
-                if(it.gatesAlongRoute != null) {
-                    if(it.gatesAlongRoute.isNotEmpty()) {
-                        showToast("gate is ${it.gatesAlongRoute[0].id}", requireContext())
-                        arr = IntArray(it.gatesAlongRoute.size)
-                        for (i in arr!!) {
-                            arr!![i] = it.gatesAlongRoute[i].id!!
+                        for(marker in  gatesMarkers){
+                            marker.remove()
                         }
-                        for(gate in it.gatesAlongRoute){
-                            gatesMarkers.add(googleMap.addMarker(MarkerOptions().position(
-                                LatLng(
-                                    gate.location!!.latitude!!,
-                                    gate.location.longitude!!
-                                )
-                            ).title(gate.name)
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)))!!)
-                        }
-                    }else{
-                        arr = null
-                    }
+                        if(it.gatesAlongRoute != null) {
+                            if(it.gatesAlongRoute.isNotEmpty()) {
+                                showToast("gate is ${it.gatesAlongRoute[0].id}", requireContext())
+                                arr = IntArray(it.gatesAlongRoute.size)
+                                for (i in arr!!) {
+                                    arr!![i] = it.gatesAlongRoute[i].id!!
+                                }
+                                for(gate in it.gatesAlongRoute){
+                                    gatesMarkers.add(googleMap.addMarker(MarkerOptions().position(
+                                        LatLng(
+                                            gate.location!!.latitude!!,
+                                            gate.location.longitude!!
+                                        )
+                                    ).title(gate.name)
+                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)))!!)
+                                }
+                            }else{
+                                arr = null
+                            }
 
-                }else{
-                    arr = null
+                        }else{
+                            arr = null
+                        }
+
                 }
-            }
-        }
+
+
         apiViewModel.errorMessageLiveData.observe(requireActivity()){
             loading(false)
             showToast(it,requireContext())

@@ -27,6 +27,10 @@ class ApiViewModel : ViewModel() {
     val directionsBodyLiveData:LiveData<DirectionsModel>
         get() = directionsBodyMD
 
+    private var routesBodyMD: SingleLiveEvent<RoutesModel> = SingleLiveEvent()
+    val routesBodyLiveData:LiveData<RoutesModel>
+        get() = routesBodyMD
+
     private var gatesBodyMD: SingleLiveEvent<GatesModel> = SingleLiveEvent()
     val gatesBodyLiveData:LiveData<GatesModel>
         get() = gatesBodyMD
@@ -151,6 +155,24 @@ class ApiViewModel : ViewModel() {
                 }
 
                 override fun onFailure(call: Call<TicketsResponseModel>, t: Throwable) {
+                    errorMessageMD.postValue(t.message.toString())
+                }
+
+            })
+    }
+
+    fun getRoute(addressModel: AddressModel){
+        RetrofitFactory.apiInterface().getRoute(addressModel)
+            .enqueue(object :retrofit2.Callback<RoutesModel>{
+                override fun onResponse(call: Call<RoutesModel>, response: Response<RoutesModel>) {
+                    codesMD.postValue(response.code())
+                    if(response.code()==200){
+                        routesBodyMD.postValue(response.body())
+                    }
+
+                }
+
+                override fun onFailure(call: Call<RoutesModel>, t: Throwable) {
                     errorMessageMD.postValue(t.message.toString())
                 }
 
