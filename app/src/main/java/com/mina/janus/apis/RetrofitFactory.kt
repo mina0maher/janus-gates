@@ -19,7 +19,7 @@ object RetrofitFactory {
         val client = builder.build()
 
         return Retrofit.Builder()
-            .baseUrl("https://janus.fly.dev/api/")
+            .baseUrl("https://janus-gates.up.railway.app/api/")
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .client(OkHttpClient().newBuilder().cookieJar(SessionCookieJar()).build())

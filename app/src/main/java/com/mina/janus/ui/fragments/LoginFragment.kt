@@ -11,7 +11,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -21,6 +20,7 @@ import com.mina.janus.utilities.Constants
 import com.mina.janus.utilities.Constants.KEY_IS_LOGIN_CLICKED
 import com.mina.janus.utilities.Constants.KEY_USER_EMAIL
 import com.mina.janus.utilities.Constants.KEY_USER_NAME
+import com.mina.janus.utilities.Constants.KEY_USER_PASSWORD
 import com.mina.janus.utilities.Constants.isOnline
 import com.mina.janus.utilities.Constants.showToast
 import com.mina.janus.utilities.PreferenceManager
@@ -169,6 +169,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             apiViewModel.bodyLiveData.observe(requireActivity()){
                 preferenceManager.putString(KEY_USER_NAME, it.name)
                 preferenceManager.putString(KEY_USER_EMAIL,it.email)
+                preferenceManager.putString(KEY_USER_PASSWORD,it.password)
             }
     }
 

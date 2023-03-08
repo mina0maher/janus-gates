@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
@@ -25,7 +26,8 @@ class StartFragment : Fragment(R.layout.fragment_start) {
         //init views
         preferenceManager = PreferenceManager(requireActivity())
         if(preferenceManager.getBoolean(Constants.KEY_IS_SIGNED_IN)){
-            findNavController().navigate(R.id.action_startFragment_to_mapsFragment)
+            val bundle = bundleOf("reSignIn" to true)
+            findNavController().navigate(R.id.action_startFragment_to_mapsFragment,bundle)
         }
         signUpButton = view.findViewById(R.id.buttonSignUp)
         logoImage = view.findViewById(R.id.ImageView)

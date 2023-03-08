@@ -13,9 +13,11 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -23,9 +25,12 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.os.bundleOf
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -42,10 +47,18 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.google.android.material.navigation.NavigationView
 import com.mina.janus.R
 import com.mina.janus.models.AddressModel
+import com.mina.janus.models.UserLoginModel
+import com.mina.janus.utilities.Constants
+import com.mina.janus.utilities.Constants.KEY_JSESSOIONID
+import com.mina.janus.utilities.Constants.KEY_USER_EMAIL
+import com.mina.janus.utilities.Constants.KEY_USER_NAME
+import com.mina.janus.utilities.Constants.KEY_USER_PASSWORD
 import com.mina.janus.utilities.Constants.isOnline
 import com.mina.janus.utilities.Constants.showToast
+import com.mina.janus.utilities.PreferenceManager
 import com.mina.janus.viewmodles.ApiViewModel
 import java.util.*
 import kotlin.collections.ArrayList
@@ -61,6 +74,7 @@ class MapsFragment : Fragment() {
     private lateinit var progressBar: ProgressBar
     private lateinit var buttonYourLocation:LinearLayout
     //vars
+    private lateinit var preferenceManager: PreferenceManager
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var wheretoMarker: Marker
     private lateinit var yourLocationMarker: Marker
@@ -166,7 +180,22 @@ class MapsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         dialog = Dialog(requireContext())
-        return inflater.inflate(R.layout.fragment_maps, container, false)
+        val view = inflater.inflate(R.layout.fragment_maps, container, false)
+        val drawerLayout=view.findViewById<DrawerLayout>(R.id.drawerLayout)
+        view.findViewById<ImageView>(R.id.imageSettings).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+        val navigationView:NavigationView=view.findViewById(R.id.navigationView)
+        navigationView.itemIconTintList=null
+        navigationView.setNavigationItemSelectedListener{menuItem->
+            if(menuItem.title=="Log Out"){
+                findNavController().navigate(R.id.action_mapsFragment_to_startFragment)
+                preferenceManager.clear()
+            }
+             false
+        }
+
+        return view;
     }
 
 
@@ -176,8 +205,20 @@ class MapsFragment : Fragment() {
         mapFragment?.getMapAsync(callback)
         initViews(view)
         getLocationPermission()
-
+        preferenceManager = PreferenceManager(requireActivity())
         Places.initialize(requireContext(),getString(R.string.google_maps_api_key), Locale("EG"))
+
+        var signInAgain= requireArguments().getBoolean("reSignIn")
+         showToast(preferenceManager.getString(KEY_JSESSOIONID)!!,requireContext())
+        if(signInAgain){
+            apiViewModel.signIn(UserLoginModel(preferenceManager.getString(KEY_USER_EMAIL)!!,preferenceManager.getString(KEY_USER_PASSWORD)!!))
+            apiViewModel.jsessionidLiveData.observe(requireActivity()){
+                preferenceManager.putString(Constants.KEY_JSESSOIONID,it)
+            }
+        }
+        showToast(preferenceManager.getString(KEY_JSESSOIONID)!!,requireContext())
+
+
         textWhereto.isFocusable = false
         textWhereto.setOnClickListener {
             val fieldList = listOf(
@@ -335,52 +376,50 @@ class MapsFragment : Fragment() {
         apiViewModel.routesBodyLiveData.observe(requireActivity()) {
 
 
-                val polylineOptions = PolylineOptions()
+            val polylineOptions = PolylineOptions()
+            polylineOptions.addAll(decodePoly(it!!.routesResponse!!.polyline!!.encodedPolyline!!))
+            polylineOptions.width(15f)
+            polylineOptions.color(ContextCompat.getColor(requireContext(), R.color.red))
+            polylineOptions.geodesic(true)
+            polylineFinal?.remove()
+            polylineFinal =    polylineOptions.let {itPolyOptions -> googleMap.addPolyline(itPolyOptions) }
+            val bounds = LatLngBounds.builder()
+                .include(yourLocationLatLng)
+                .include(whereToLatLng)
+                .build()
 
+            val width: Int = Resources.getSystem().displayMetrics.widthPixels
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,width,600,30))
+            loading(false)
 
-                        polylineOptions.addAll(decodePoly(it!!.routesResponse!!.polyline!!.encodedPath!!))
-                        polylineOptions.width(15f)
-                        polylineOptions.color(ContextCompat.getColor(requireContext(), R.color.red))
-                        polylineOptions.geodesic(true)
-                        polylineFinal?.remove()
-                        polylineFinal =    polylineOptions.let {itPolyOptions -> googleMap.addPolyline(itPolyOptions) }
-                        val bounds = LatLngBounds.builder()
-                            .include(yourLocationLatLng)
-                            .include(whereToLatLng)
-                            .build()
-
-                        val width: Int = Resources.getSystem().displayMetrics.widthPixels
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,width,600,30))
-                        loading(false)
-
-                        for(marker in  gatesMarkers){
-                            marker.remove()
-                        }
-                        if(it.gatesAlongRoute != null) {
-                            if(it.gatesAlongRoute.isNotEmpty()) {
-                                showToast("gate is ${it.gatesAlongRoute[0].id}", requireContext())
-                                arr = IntArray(it.gatesAlongRoute.size)
-                                for (i in arr!!) {
-                                    arr!![i] = it.gatesAlongRoute[i].id!!
-                                }
-                                for(gate in it.gatesAlongRoute){
-                                    gatesMarkers.add(googleMap.addMarker(MarkerOptions().position(
-                                        LatLng(
-                                            gate.location!!.latitude!!,
-                                            gate.location.longitude!!
-                                        )
-                                    ).title(gate.name)
-                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)))!!)
-                                }
-                            }else{
-                                arr = null
-                            }
-
-                        }else{
-                            arr = null
-                        }
-
+            for(marker in  gatesMarkers){
+                marker.remove()
+            }
+            if(it.gatesAlongRoute != null) {
+                if(it.gatesAlongRoute.isNotEmpty()) {
+                    showToast("gate is ${it.gatesAlongRoute[0].id}", requireContext())
+                    arr = IntArray(it.gatesAlongRoute.size)
+                    for (i in arr!!) {
+                        arr!![i] = it.gatesAlongRoute[i].id!!
+                    }
+                    for(gate in it.gatesAlongRoute){
+                        gatesMarkers.add(googleMap.addMarker(MarkerOptions().position(
+                            LatLng(
+                                gate.location!!.latitude!!,
+                                gate.location.longitude!!
+                            )
+                        ).title(gate.name)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)))!!)
+                    }
+                }else{
+                    arr = null
                 }
+
+            }else{
+                arr = null
+            }
+
+        }
 
 
         apiViewModel.errorMessageLiveData.observe(requireActivity()){
@@ -561,3 +600,5 @@ class MapsFragment : Fragment() {
 
 
 }
+
+

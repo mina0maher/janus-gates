@@ -45,7 +45,6 @@ private var array :IntArray?=null
     private var checkedCar:CarModelItem?=null
     private var checkedGates:GatesModel = GatesModel()
     private var ticketText:String = ""
-    private var ticketCounter = 0
     private lateinit var dialog: Dialog
 
 
@@ -99,17 +98,13 @@ apiViewModel.codesLiveData.observe(requireActivity()){
         payNowButton.setOnClickListener{
             if(checkedCar != null && checkedGates.isNotEmpty()){
                 for(gate in checkedGates){
-                    ticketCounter++
                     apiViewModel.reserveTicket(preferenceManager.getString(Constants.KEY_JSESSOIONID)!!,getTicketInfo(gate,checkedCar!!))
                 }
             }
         }
         apiViewModel.ticketBodyLiveData.observe(requireActivity()){
             ticketText+= "1 * ${it.gate!!.name} = ${it.paidPrice} \n"
-            showToast("$ticketCounter    ${checkedGates.size-1}",requireContext())
-            if(ticketCounter==checkedGates.size){
-                openConfirmationDialog(ticketText)
-            }
+            openConfirmationDialog(ticketText)
         }
 
 

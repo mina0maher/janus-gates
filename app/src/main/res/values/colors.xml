@@ -16,5 +16,5 @@
     <color name="primary_text" >#212121</color>
     <color name="secondary_text" >#757575</color>
     <color name="input_background" >#ECECEC</color>
-    <color name="icon_background" >#32FFFFFF</color>
+    <color name="icon_background" >#D9FFFFFF</color>
 </resources>
