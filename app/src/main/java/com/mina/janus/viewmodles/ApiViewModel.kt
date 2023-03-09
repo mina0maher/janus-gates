@@ -35,9 +35,9 @@ class ApiViewModel : ViewModel() {
     val gatesBodyLiveData:LiveData<GatesModel>
         get() = gatesBodyMD
 
-    private var carBodyMD: SingleLiveEvent<CarModel> = SingleLiveEvent()
-    val carBodyLiveData:LiveData<CarModel>
-        get() = carBodyMD
+    private var carsBodyMD: SingleLiveEvent<CarModel> = SingleLiveEvent()
+    val carsBodyLiveData:LiveData<CarModel>
+        get() = carsBodyMD
 
     private var jsessionidMD: SingleLiveEvent<String> = SingleLiveEvent()
     val jsessionidLiveData:LiveData<String>
@@ -50,6 +50,10 @@ class ApiViewModel : ViewModel() {
     private var statusBodyMD: SingleLiveEvent<StatusModel> = SingleLiveEvent()
     val statusBodyLiveData:LiveData<StatusModel>
         get() = statusBodyMD
+
+    private var carBodyMD: SingleLiveEvent<CarModelItem> = SingleLiveEvent()
+    val carBodyLiveData:LiveData<CarModelItem>
+        get() = carBodyMD
 
     fun signIn(userLoginModel: UserLoginModel){
          RetrofitFactory.apiInterface().logIn(userLoginModel)
@@ -135,7 +139,7 @@ class ApiViewModel : ViewModel() {
                 override fun onResponse(call: Call<CarModel>, response: Response<CarModel>) {
                     codesMD.postValue(response.code())
                     if(response.code()==200){
-                        carBodyMD.postValue(response.body())
+                        carsBodyMD.postValue(response.body())
                     }
                 }
 
@@ -194,6 +198,26 @@ class ApiViewModel : ViewModel() {
                 }
 
                 override fun onFailure(call: Call<StatusModel>, t: Throwable) {
+                    errorMessageMD.postValue(t.message.toString())
+                }
+
+            })
+    }
+
+    fun addCar(sessionId:String,carPostModel: CarPostModel){
+        RetrofitFactory.apiInterface().addCar(sessionId,carPostModel)
+            .enqueue(object :retrofit2.Callback<CarModelItem>{
+                override fun onResponse(
+                    call: Call<CarModelItem>,
+                    response: Response<CarModelItem>
+                ) {
+                    codesMD.postValue(response.code())
+                    if(response.code()==200){
+                        carBodyMD.postValue(response.body())
+                    }
+                }
+
+                override fun onFailure(call: Call<CarModelItem>, t: Throwable) {
                     errorMessageMD.postValue(t.message.toString())
                 }
 

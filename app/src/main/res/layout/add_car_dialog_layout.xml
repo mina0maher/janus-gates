@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_gravity="center"
+    >
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:cardCornerRadius="@dimen/_20sdp"
+        android:elevation="@dimen/_20sdp"
+        >
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/_20sdp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonContact"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_50sdp"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:elevation="@dimen/_50sdp"
+                android:text="see gates"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_13ssp"
+                android:textStyle="bold"
+                app:cornerRadius="@dimen/_20sdp"
+                app:layout_constraintTop_toBottomOf="@id/carName"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:rippleColor="@color/gray1"
+                app:strokeColor="@color/gray1"
+                app:strokeWidth="1dp" />
+
+            <TextView
+                android:id="@+id/textDismiss"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:text="@string/dismiss"
+                android:textColor="@color/secondary_text"
+                android:textSize="@dimen/_15sdp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/buttonContact" />
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/licensePlate"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_50sdp"
+                app:boxCornerRadiusBottomEnd="@dimen/_25sdp"
+                app:boxCornerRadiusBottomStart="@dimen/_25sdp"
+                app:boxCornerRadiusTopEnd="@dimen/_25sdp"
+                app:boxCornerRadiusTopStart="@dimen/_25sdp"
+                app:layout_constraintTop_toTopOf="parent"
+               >
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/licensePlateNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/licenseplate"
+
+                    android:drawablePadding="@dimen/_5sdp"
+                    android:hint="License Plate"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/chooseYourCarType"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_50sdp"
+                android:gravity="center"
+                android:layout_marginTop="@dimen/_10sdp"
+                app:boxCornerRadiusBottomEnd="@dimen/_25sdp"
+                app:boxCornerRadiusBottomStart="@dimen/_25sdp"
+                app:boxCornerRadiusTopEnd="@dimen/_25sdp"
+                app:boxCornerRadiusTopStart="@dimen/_25sdp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/licensePlate">
+
+                <AutoCompleteTextView
+                    android:id="@+id/autoCompleteTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:hint="Choose Your Car Type"
+                    android:inputType="none"
+                    android:drawableStart="@drawable/cartype"
+                    android:drawablePadding="@dimen/_5sdp"
+                    android:maxLines="1"
+                    />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/carModel"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_50sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                app:boxCornerRadiusBottomEnd="@dimen/_25sdp"
+                app:boxCornerRadiusBottomStart="@dimen/_25sdp"
+                app:boxCornerRadiusTopEnd="@dimen/_25sdp"
+                app:boxCornerRadiusTopStart="@dimen/_25sdp"
+                app:layout_constraintTop_toBottomOf="@id/chooseYourCarType"
+                >
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/carModelName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/carmodel"
+
+                    android:drawablePadding="@dimen/_5sdp"
+                    android:hint="Car Model"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/carName"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_50sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                app:boxCornerRadiusBottomEnd="@dimen/_25sdp"
+                app:boxCornerRadiusBottomStart="@dimen/_25sdp"
+                app:boxCornerRadiusTopEnd="@dimen/_25sdp"
+                app:boxCornerRadiusTopStart="@dimen/_25sdp"
+                app:layout_constraintTop_toBottomOf="@id/carModel"
+                >
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/carNameName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/carname"
+
+                    android:drawablePadding="@dimen/_5sdp"
+                    android:hint="Car Name"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

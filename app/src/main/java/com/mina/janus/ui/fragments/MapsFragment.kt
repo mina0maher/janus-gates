@@ -301,17 +301,24 @@ class MapsFragment : Fragment() {
 
         }
         textChooseGates.setOnClickListener{
-            if(preferenceManager.getBoolean(KEY_IS_VERIFIED)) {
-                findNavController().navigate(R.id.action_mapsFragment_to_reservationFragment)
-            }else{
-                loading(true)
-                checkVerified()
-                loading(false)
-                if(preferenceManager.getBoolean(KEY_IS_VERIFIED)){
+            if(isOnline(requireContext())) {
+                if (preferenceManager.getBoolean(KEY_IS_VERIFIED)) {
                     findNavController().navigate(R.id.action_mapsFragment_to_reservationFragment)
-                }else{
-                    showToast("please check your email inbox and verify your email",requireContext())
+                } else {
+                    loading(true)
+                    checkVerified()
+                    loading(false)
+                    if (preferenceManager.getBoolean(KEY_IS_VERIFIED)) {
+                        findNavController().navigate(R.id.action_mapsFragment_to_reservationFragment)
+                    } else {
+                        showToast(
+                            "please check your email inbox and verify your email",
+                            requireContext()
+                        )
+                    }
                 }
+            }else{
+                showOfflineDialog()
             }
         }
         navigationUserName=navigationView.getHeaderView(0).findViewById(R.id.userName)
@@ -333,7 +340,12 @@ private fun  yourLocationClick(){
     }
 }
     private fun checkVerified(){
-        apiViewModel.getStatus(preferenceManager.getString(KEY_JSESSOIONID)!!)
+        if(isOnline(requireContext())) {
+            apiViewModel.getStatus(preferenceManager.getString(KEY_JSESSOIONID)!!)
+        }else{
+            showOfflineDialog()
+            loading(false)
+        }
         apiViewModel.statusBodyLiveData.observe(requireActivity()){
             if(it.verified==true){
                 navigationStatus.text="verified"
@@ -673,6 +685,7 @@ private fun  yourLocationClick(){
         super.onDestroy()
         apiViewModel.directionsBodyLiveData.removeObservers(requireActivity())
         apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
+        apiViewModel.statusBodyLiveData.removeObservers(requireActivity())
     }
 
 

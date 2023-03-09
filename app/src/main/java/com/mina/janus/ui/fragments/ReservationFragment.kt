@@ -7,8 +7,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView.OnItemSelectedListener
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.ProgressBar
+import android.widget.Spinner
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -16,20 +19,19 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.mina.janus.R
+import com.mina.janus.adapters.AddCarAdapter
 import com.mina.janus.adapters.CarsAdapter
 import com.mina.janus.adapters.GatesAdapter
+import com.mina.janus.listeners.AddCarListener
 import com.mina.janus.listeners.CarsListener
 import com.mina.janus.listeners.GatesListener
-import com.mina.janus.models.CarModelItem
-import com.mina.janus.models.GatesAlongRoute
-import com.mina.janus.models.GatesModel
-import com.mina.janus.models.TicketPostModel
+import com.mina.janus.models.*
 import com.mina.janus.utilities.Constants
 import com.mina.janus.utilities.Constants.showToast
 import com.mina.janus.utilities.PreferenceManager
 import com.mina.janus.viewmodles.ApiViewModel
 
-class ReservationFragment : Fragment(),CarsListener,GatesListener {
+class ReservationFragment : Fragment(),CarsListener,GatesListener,AddCarListener {
 private var array :IntArray?=null
     private val apiViewModel: ApiViewModel by viewModels()
     private var gatesModel:GatesModel? = null
@@ -45,6 +47,8 @@ private var array :IntArray?=null
     private var checkedCar:CarModelItem?=null
     private var checkedGates:GatesModel = GatesModel()
     private var ticketText:String = ""
+    private var chosenCarName=""
+    private lateinit var autoCompleteTextView: AutoCompleteTextView
     private lateinit var dialog: Dialog
 
 
@@ -81,15 +85,15 @@ private var array :IntArray?=null
             gatesLoading(false)
         }
         preferenceManager.getString(Constants.KEY_JSESSOIONID)?.let { apiViewModel.getCars(it) }
-        apiViewModel.carBodyLiveData.observe(requireActivity()){
+        apiViewModel.carsBodyLiveData.observe(requireActivity()){
             carsRecyclerView.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
             carsAdapter= CarsAdapter(it,requireContext(),this)
             carsRecyclerView.adapter =carsAdapter
             carsLoading(false)
         }
-apiViewModel.codesLiveData.observe(requireActivity()){
-    showToast(it.toString(),requireContext())
-}
+        apiViewModel.codesLiveData.observe(requireActivity()){
+            showToast(it.toString(),requireContext())
+        }
         apiViewModel.errorMessageLiveData.observe(requireActivity()){
             showToast(it,requireContext())
         }
@@ -145,6 +149,34 @@ apiViewModel.codesLiveData.observe(requireActivity()){
         }
     }
 
+    override fun onAddCarClicked() {
+        dialog.setContentView(R.layout.add_car_dialog_layout)
+        dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        autoCompleteTextView=dialog.findViewById(R.id.autoCompleteTextView)
+        val vehicleTypes=ArrayList<VehicleType>();
+        for(price in gatesModel?.get(0)?.prices!!){
+            vehicleTypes.add(price.vehicleType!!)
+        }
+        val addCarDropdownAdapter= AddCarAdapter(requireContext(),vehicleTypes,this)
+        addCarDropdownAdapter.setDropDownViewResource(R.layout.addcar_dropdown_item)
+        autoCompleteTextView.setAdapter(addCarDropdownAdapter)
+//        val textView: TextView = dialog.findViewById(R.id.textDismiss)
+//        val ticketsText: TextView = dialog.findViewById(R.id.ticket_text)
+//        ticketsText.text=text
+//        val button: Button = dialog.findViewById(R.id.buttonContact)
+//        textView.setOnClickListener { dialog.dismiss() }
+//        button.setOnClickListener {
+//            dialog.dismiss()
+//            findNavController().popBackStack()
+//        }
+        val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
+        val height = (resources.displayMetrics.heightPixels * 0.80).toInt()
+        dialog.window!!.setLayout(width, height)
+        dialog.setCancelable(false)
+        dialog.show()
+
+    }
+
     override fun onGateClicked(checkedGates: GatesModel) {
         this.checkedGates=checkedGates
         if(checkedCar!=null&&checkedGates.isNotEmpty()){
@@ -181,5 +213,12 @@ private fun getTolls(checkedGates:GatesModel, checkedCar:CarModelItem?):Double{
         dialog.window!!.setLayout(width, height)
         dialog.setCancelable(false)
         dialog.show()
+    }
+
+    override fun onItemClicked(carType: String) {
+        if(this::autoCompleteTextView.isInitialized){
+            chosenCarName = carType
+           // autoCompleteTextView.setText(carType)
+        }
     }
 }

@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
@@ -34,6 +35,9 @@ class CarsAdapter (private  val carsList:ArrayList<CarModelItem>,private val con
         if(getItemViewType(position)== NORMAL_VIEW_TYPE
             && holder is NormalViewHolder) {
             holder.setData(carsList[position],context,carsListener)
+        }else if(getItemViewType(position)== ADD_VIEW_TYPE
+            && holder is AddViewHolder){
+            holder.setData(carsListener)
         }
     }
 
@@ -59,7 +63,12 @@ class CarsAdapter (private  val carsList:ArrayList<CarModelItem>,private val con
     }
 
     class AddViewHolder(view: View): RecyclerView.ViewHolder(view){
-       // private val addLayout :LinearLayout = view.findViewById(R.id.add_layout)
+        private val addLayout : LinearLayout = view.findViewById(R.id.add_layout)
+        fun setData(carsListener: CarsListener){
+            addLayout.setOnClickListener{
+                carsListener.onAddCarClicked()
+            }
+        }
     }
     class NormalViewHolder(view: View):RecyclerView.ViewHolder(view){
         private val layout : ConstraintLayout = itemView.findViewById(R.id.item_car_layout)

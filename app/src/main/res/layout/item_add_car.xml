@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/add_layout"
+
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -11,6 +11,7 @@
     android:elevation="@dimen/_20sdp"
     >
     <LinearLayout
+        android:id="@+id/add_layout"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/_55sdp"
         android:orientation="vertical"
