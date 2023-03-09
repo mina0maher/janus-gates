@@ -47,6 +47,10 @@ class ApiViewModel : ViewModel() {
     val ticketBodyLiveData:LiveData<TicketsResponseModel>
         get() = ticketBodyMD
 
+    private var statusBodyMD: SingleLiveEvent<StatusModel> = SingleLiveEvent()
+    val statusBodyLiveData:LiveData<StatusModel>
+        get() = statusBodyMD
+
     fun signIn(userLoginModel: UserLoginModel){
          RetrofitFactory.apiInterface().logIn(userLoginModel)
              .enqueue(object :retrofit2.Callback<UserRegisterModel>{
@@ -173,6 +177,23 @@ class ApiViewModel : ViewModel() {
                 }
 
                 override fun onFailure(call: Call<RoutesModel>, t: Throwable) {
+                    errorMessageMD.postValue(t.message.toString())
+                }
+
+            })
+    }
+
+    fun getStatus(sessionId:String){
+        RetrofitFactory.apiInterface().getStatus(sessionId)
+            .enqueue(object :retrofit2.Callback<StatusModel>{
+                override fun onResponse(call: Call<StatusModel>, response: Response<StatusModel>) {
+                    codesMD.postValue(response.code())
+                    if(response.code()==200){
+                        statusBodyMD.postValue(response.body())
+                    }
+                }
+
+                override fun onFailure(call: Call<StatusModel>, t: Throwable) {
                     errorMessageMD.postValue(t.message.toString())
                 }
 

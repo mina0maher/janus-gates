@@ -205,6 +205,7 @@ class SignupFragment : Fragment(R.layout.fragment_signup) {
         apiViewModel.codesLiveData.removeObservers(requireActivity())
         apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
         apiViewModel.bodyLiveData.removeObservers (requireActivity())
+        apiViewModel.jsessionidLiveData.removeObservers(requireActivity())
     }
 
 }

@@ -178,6 +178,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         apiViewModel.codesLiveData.removeObservers(requireActivity())
         apiViewModel.errorMessageLiveData.removeObservers(requireActivity())
         apiViewModel.bodyLiveData.removeObservers (requireActivity())
+        apiViewModel.jsessionidLiveData.removeObservers(requireActivity())
     }
 
 }

@@ -30,5 +30,8 @@ interface ApiInterface {
     @POST("routes")
     fun getRoute(@Body addressModel: AddressModel):Call<RoutesModel>
 
+    @GET("auth/status")
+    fun getStatus(@Header("Cookie")sessionId:String):Call<StatusModel>
+
 
 }

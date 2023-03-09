@@ -13,7 +13,6 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -25,7 +24,6 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.os.bundleOf
@@ -51,7 +49,7 @@ import com.google.android.material.navigation.NavigationView
 import com.mina.janus.R
 import com.mina.janus.models.AddressModel
 import com.mina.janus.models.UserLoginModel
-import com.mina.janus.utilities.Constants
+import com.mina.janus.utilities.Constants.KEY_IS_VERIFIED
 import com.mina.janus.utilities.Constants.KEY_JSESSOIONID
 import com.mina.janus.utilities.Constants.KEY_USER_EMAIL
 import com.mina.janus.utilities.Constants.KEY_USER_NAME
@@ -73,6 +71,10 @@ class MapsFragment : Fragment() {
     private lateinit var buttonConfirm:Button
     private lateinit var progressBar: ProgressBar
     private lateinit var buttonYourLocation:LinearLayout
+    private lateinit var navigationView:NavigationView
+    private lateinit var navigationUserName: TextView
+    private lateinit var navigationStatus: TextView
+
     //vars
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -88,6 +90,8 @@ class MapsFragment : Fragment() {
     private val apiViewModel: ApiViewModel by viewModels()
     private var locationOpened=false
     private  var currentLocation:Location?=null
+
+    private var isYourLocationClicked = false
 
     private val callback = OnMapReadyCallback { googleMap ->
         this.googleMap=googleMap
@@ -123,6 +127,8 @@ class MapsFragment : Fragment() {
             if(it.resultCode== RESULT_OK) {
                 locationOpened = true
                 getDeviceLocation()
+            }else{
+                locationOpened=false
             }
         }
 
@@ -144,7 +150,7 @@ class MapsFragment : Fragment() {
                     getDirectionsFromLatLng(yourLocationLatLng, whereToLatLng)
                 }
             }else{
-                showDialog()
+                showOfflineDialog()
             }
         }
 
@@ -167,7 +173,7 @@ class MapsFragment : Fragment() {
                     getDirectionsFromLatLng(yourLocationLatLng, whereToLatLng)
                 }
             }else{
-                showDialog()
+                showOfflineDialog()
             }
         }
     }
@@ -185,7 +191,7 @@ class MapsFragment : Fragment() {
         view.findViewById<ImageView>(R.id.imageSettings).setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
-        val navigationView:NavigationView=view.findViewById(R.id.navigationView)
+         navigationView=view.findViewById(R.id.navigationView)
         navigationView.itemIconTintList=null
         navigationView.setNavigationItemSelectedListener{menuItem->
             if(menuItem.title=="Log Out"){
@@ -194,8 +200,7 @@ class MapsFragment : Fragment() {
             }
              false
         }
-
-        return view;
+        return view
     }
 
 
@@ -209,14 +214,12 @@ class MapsFragment : Fragment() {
         Places.initialize(requireContext(),getString(R.string.google_maps_api_key), Locale("EG"))
 
         var signInAgain= requireArguments().getBoolean("reSignIn")
-         showToast(preferenceManager.getString(KEY_JSESSOIONID)!!,requireContext())
         if(signInAgain){
             apiViewModel.signIn(UserLoginModel(preferenceManager.getString(KEY_USER_EMAIL)!!,preferenceManager.getString(KEY_USER_PASSWORD)!!))
             apiViewModel.jsessionidLiveData.observe(requireActivity()){
-                preferenceManager.putString(Constants.KEY_JSESSOIONID,it)
+                preferenceManager.putString(KEY_JSESSOIONID,it)
             }
         }
-        showToast(preferenceManager.getString(KEY_JSESSOIONID)!!,requireContext())
 
 
         textWhereto.isFocusable = false
@@ -244,34 +247,104 @@ class MapsFragment : Fragment() {
 
         buttonConfirm.setOnClickListener{
             if(isOnline(requireContext())) {
-                val bundle = bundleOf("gatesID" to arr)
-                findNavController().navigate(
-                    R.id.action_mapsFragment_to_reservationFragment,
-                    bundle
-                )
+                if(textYourLocation.text.isNotEmpty()&&textWhereto.text.isNotEmpty()) {
+
+
+                    if(preferenceManager.getBoolean(KEY_IS_VERIFIED)) {
+                        val bundle = bundleOf("gatesID" to arr)
+                        findNavController().navigate(
+                            R.id.action_mapsFragment_to_reservationFragment,
+                            bundle
+                        )
+                    }else{
+                        loading(true)
+                        checkVerified()
+                        loading(false)
+                        if(preferenceManager.getBoolean(KEY_IS_VERIFIED)){
+                            val bundle = bundleOf("gatesID" to arr)
+                            findNavController().navigate(
+                                R.id.action_mapsFragment_to_reservationFragment,
+                                bundle
+                            )
+                        }else{
+                            showToast("please check your email inbox and verify your email",requireContext())
+                        }
+                    }
+
+
+
+                }else{
+                    showToast("please choose your start and destination locations",requireContext())
+                }
             }else{
-                showDialog()
+                showOfflineDialog()
             }
         }
+
         buttonYourLocation.setOnClickListener {
-            textYourLocation.text = "your location"
-            if (::yourLocationMarker.isInitialized) {
-                yourLocationMarker.remove()
-            }
-            val currentLocationLatLng = LatLng(currentLocation!!.latitude,currentLocation!!.longitude)
 
-            yourLocationMarker = googleMap.addMarker(MarkerOptions().position(currentLocationLatLng).title("your location"))!!
+                if (textYourLocation.text.toString() != "your location") {
+                    textYourLocation.text = "your location"
+                    if (::yourLocationMarker.isInitialized) {
+                        yourLocationMarker.remove()
+                    }
 
-            yourLocationLatLng = currentLocationLatLng
-            if (::whereToLatLng.isInitialized) {
-                getDirectionsFromLatLng(yourLocationLatLng, whereToLatLng)
-            }
+                        getLocationPermission()
+                        getDeviceLocation()
+                        try {
+                            yourLocationClick()
+                        }catch (ex :java.lang.NullPointerException){
+                                isYourLocationClicked=true;
+                        }
+                }
+
+
         }
         textChooseGates.setOnClickListener{
-            findNavController().navigate(R.id.action_mapsFragment_to_reservationFragment)
+            if(preferenceManager.getBoolean(KEY_IS_VERIFIED)) {
+                findNavController().navigate(R.id.action_mapsFragment_to_reservationFragment)
+            }else{
+                loading(true)
+                checkVerified()
+                loading(false)
+                if(preferenceManager.getBoolean(KEY_IS_VERIFIED)){
+                    findNavController().navigate(R.id.action_mapsFragment_to_reservationFragment)
+                }else{
+                    showToast("please check your email inbox and verify your email",requireContext())
+                }
+            }
         }
+        navigationUserName=navigationView.getHeaderView(0).findViewById(R.id.userName)
+        navigationStatus=navigationView.getHeaderView(0).findViewById(R.id.statusText)
+        navigationUserName .text=preferenceManager.getString(KEY_USER_NAME)
+        checkVerified()
+    }
+private fun  yourLocationClick(){
+    val currentLocationLatLng =
+        LatLng(currentLocation!!.latitude, currentLocation!!.longitude)
 
+    yourLocationMarker = googleMap.addMarker(
+        MarkerOptions().position(currentLocationLatLng).title("your location")
+    )!!
 
+    yourLocationLatLng = currentLocationLatLng
+    if (::whereToLatLng.isInitialized) {
+        getDirectionsFromLatLng(yourLocationLatLng, whereToLatLng)
+    }
+}
+    private fun checkVerified(){
+        apiViewModel.getStatus(preferenceManager.getString(KEY_JSESSOIONID)!!)
+        apiViewModel.statusBodyLiveData.observe(requireActivity()){
+            if(it.verified==true){
+                navigationStatus.text="verified"
+                navigationStatus.setTextColor(requireContext().getColor(R.color.green))
+                preferenceManager.putBoolean(KEY_IS_VERIFIED,true)
+            }else{
+                navigationStatus.text="not verified"
+                navigationStatus.setTextColor(requireContext().getColor(R.color.red))
+                preferenceManager.putBoolean(KEY_IS_VERIFIED,true)
+            }
+        }
     }
     private fun initViews(view: View){
         textWhereto =view.findViewById(R.id.textWhereto)
@@ -284,14 +357,21 @@ class MapsFragment : Fragment() {
 
     private fun getDirectionsFromLatLng(origin:LatLng, destination:LatLng){
             if(isOnline(requireContext())) {
-                getDirection(
-                    AddressModel(
-                        "${origin.latitude}, ${origin.longitude}",
-                        "${destination.latitude}, ${destination.longitude}"
+                if((ContextCompat.checkSelfPermission(this.requireContext(),
+                        ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED||
+                            ContextCompat.checkSelfPermission(this.requireContext(),
+                                ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED)) {
+                    getDirection(
+                        AddressModel(
+                            "${origin.latitude}, ${origin.longitude}",
+                            "${destination.latitude}, ${destination.longitude}"
+                        )
                     )
-                )
+                }else{
+                    getDeviceLocation()
+                }
             }else{
-                showDialog()
+                showOfflineDialog()
             }
     }
 
@@ -374,8 +454,6 @@ class MapsFragment : Fragment() {
         //////////////////////////////////
         apiViewModel.getRoute(addressModel)
         apiViewModel.routesBodyLiveData.observe(requireActivity()) {
-
-
             val polylineOptions = PolylineOptions()
             polylineOptions.addAll(decodePoly(it!!.routesResponse!!.polyline!!.encodedPolyline!!))
             polylineOptions.width(15f)
@@ -431,7 +509,7 @@ class MapsFragment : Fragment() {
 
 
 
-    private fun showDialog(){
+    private fun showOfflineDialog(){
         dialog.setContentView(R.layout.no_internet_for_buttons)
         dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         val textView = dialog.findViewById<TextView>(R.id.textDismiss)
@@ -446,10 +524,10 @@ class MapsFragment : Fragment() {
     }
 
     private fun createLocationRequest() {
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 50000)
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
             .setWaitForAccurateLocation(true)
-            .setMinUpdateIntervalMillis(3000)
-            .setMaxUpdateDelayMillis(1000)
+            .setMinUpdateIntervalMillis(500)
+            .setMaxUpdateDelayMillis(10000 / 3)
             .build()
 
         val builder = LocationSettingsRequest.Builder()
@@ -481,6 +559,7 @@ class MapsFragment : Fragment() {
 
             }
         }
+
     }
 
 
@@ -488,16 +567,16 @@ class MapsFragment : Fragment() {
         try {
             val manager: LocationManager? = getSystemService(requireContext(), LocationManager::class.java )
 
-            if (( !manager!!.isProviderEnabled( LocationManager.GPS_PROVIDER ) )&&!locationOpened ) {
+            if (!manager!!.isProviderEnabled( LocationManager.GPS_PROVIDER )  ) {
                 createLocationRequest()
             }else {
                 fusedLocationProviderClient =
                     LocationServices.getFusedLocationProviderClient(this.requireActivity())
                 if (locationPermissionGranted) {
                     val location = fusedLocationProviderClient.lastLocation
-                    location.addOnCompleteListener {
-                        if (it.isSuccessful) {
-                            currentLocation = it.result
+                    location.addOnSuccessListener {
+
+                            currentLocation = it
                             if(currentLocation!=null) {
                                 moveCamera(
                                     LatLng(
@@ -505,12 +584,14 @@ class MapsFragment : Fragment() {
                                         currentLocation!!.longitude
                                     )
                                 )
-                            }
-                            else{
+                                if(isYourLocationClicked){
+                                    yourLocationClick()
+                                }
+                            }else{
                                 Thread.sleep(500)
                                 getDeviceLocation()
                             }
-                        }
+
                     }
                 }
             }

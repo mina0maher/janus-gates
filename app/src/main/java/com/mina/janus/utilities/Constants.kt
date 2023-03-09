@@ -18,6 +18,7 @@ object Constants {
     const val KEY_RECYCLER_SAVED_INSTANCE = "recyclerSavedInstance"
     const val KEY_IS_LOGIN_CLICKED = "isLoginClicked"
     const val KEY_IS_SIGNUP_CLICKED = "isSignUpClicked"
+    const val KEY_IS_VERIFIED="isVerified"
     private var toast: Toast? = null
      fun showToast(message: String,context: Context) {
         if(toast !=null){
