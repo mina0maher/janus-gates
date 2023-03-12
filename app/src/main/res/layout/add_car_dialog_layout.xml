@@ -22,8 +22,18 @@
             android:layout_height="wrap_content"
             android:padding="@dimen/_20sdp">
 
+            <ProgressBar
+                android:id="@+id/buttonProgressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="@id/buttonSeeGates"
+                app:layout_constraintBottom_toBottomOf="@id/buttonSeeGates"
+                app:layout_constraintEnd_toEndOf="@id/buttonSeeGates"
+                app:layout_constraintStart_toStartOf="@id/buttonSeeGates"
+                android:visibility="visible"/>
+
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonContact"
+                android:id="@+id/buttonSeeGates"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_50sdp"
                 android:layout_marginTop="@dimen/_15sdp"
@@ -50,7 +60,7 @@
                 android:textSize="@dimen/_15sdp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/buttonContact" />
+                app:layout_constraintTop_toBottomOf="@+id/buttonSeeGates" />
 
 
             <com.google.android.material.textfield.TextInputLayout

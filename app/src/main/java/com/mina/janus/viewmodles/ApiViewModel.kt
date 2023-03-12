@@ -128,7 +128,7 @@ class ApiViewModel : ViewModel() {
                 }
 
                 override fun onFailure(call: Call<GatesModel>, t: Throwable) {
-                    errorMessageMD.postValue(t.message.toString())
+                    errorMessageMD.postValue("getAllGates"+t.message.toString())
                 }
 
             })
@@ -144,7 +144,7 @@ class ApiViewModel : ViewModel() {
                 }
 
                 override fun onFailure(call: Call<CarModel>, t: Throwable) {
-                    errorMessageMD.postValue(t.message.toString())
+                    errorMessageMD.postValue("getCars"+t.message.toString())
                 }
 
             })
@@ -214,6 +214,8 @@ class ApiViewModel : ViewModel() {
                     codesMD.postValue(response.code())
                     if(response.code()==200){
                         carBodyMD.postValue(response.body())
+                    }else{
+                        errorMessageMD.postValue(response.message())
                     }
                 }
 

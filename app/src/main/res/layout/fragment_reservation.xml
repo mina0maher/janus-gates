@@ -162,7 +162,7 @@
             app:cornerRadius="@dimen/_10sdp" />
 
         <ProgressBar
-            android:id="@+id/progressBar"
+            android:id="@+id/payNowProgressBar"
             android:layout_width="@dimen/_25sdp"
             android:layout_height="@dimen/_25sdp"
             android:layout_gravity="center"

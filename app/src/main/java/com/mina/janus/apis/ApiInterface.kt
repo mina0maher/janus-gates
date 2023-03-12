@@ -33,7 +33,7 @@ interface ApiInterface {
     @GET("auth/status")
     fun getStatus(@Header("Cookie")sessionId:String):Call<StatusModel>
 
-    @POST("tickets")
+    @POST("vehicles")
     fun addCar(@Header("Cookie")sessionId:String,@Body carPostModel: CarPostModel):Call<CarModelItem>
 
 

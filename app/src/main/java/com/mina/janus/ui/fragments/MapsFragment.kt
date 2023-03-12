@@ -525,7 +525,7 @@ private fun  yourLocationClick(){
         dialog.setContentView(R.layout.no_internet_for_buttons)
         dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         val textView = dialog.findViewById<TextView>(R.id.textDismiss)
-        val button = dialog.findViewById<Button>(R.id.buttonContact)
+        val button = dialog.findViewById<Button>(R.id.buttonSeeGates)
         textView.visibility = View.GONE
         val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
         val height = (resources.displayMetrics.heightPixels * 0.80).toInt()

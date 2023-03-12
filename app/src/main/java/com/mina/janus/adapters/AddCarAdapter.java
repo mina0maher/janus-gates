@@ -5,14 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
 import com.mina.janus.R;
-import com.mina.janus.listeners.AddCarListener;
 import com.mina.janus.models.VehicleType;
 
 import java.util.ArrayList;
@@ -20,16 +18,14 @@ import java.util.ArrayList;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class AddCarAdapter extends ArrayAdapter<VehicleType> {
-    private AddCarListener addCarListener;
-    private Boolean isChosen = false;
+
     // invoke the suitable constructor of the ArrayAdapter class
-    public AddCarAdapter(@NonNull Context context, ArrayList<VehicleType> arrayList, AddCarListener addCarListener) {
+    public AddCarAdapter(@NonNull Context context, ArrayList<VehicleType> arrayList) {
 
 
         // pass the context and arrayList for the super
         // constructor of the ArrayAdapter class
         super(context, 0, arrayList);
-        this.addCarListener = addCarListener;
     }
 
     @NonNull

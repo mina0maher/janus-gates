@@ -44,6 +44,7 @@ class GatesAdapter(val list:ArrayList<GatesAlongRoute>,private val context: Cont
             gateName.text = gate.name
             gateInfo.text=gate.address
             if(gate.isChecked){
+                checkedGates.add(gate)
                 gateCheck.visibility= View.VISIBLE
                 layout.setBackgroundResource(R.drawable.item_gate_background)
             }else{
