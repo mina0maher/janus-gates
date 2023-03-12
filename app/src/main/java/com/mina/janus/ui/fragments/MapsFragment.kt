@@ -354,7 +354,7 @@ private fun  yourLocationClick(){
             }else{
                 navigationStatus.text="not verified"
                 navigationStatus.setTextColor(requireContext().getColor(R.color.red))
-                preferenceManager.putBoolean(KEY_IS_VERIFIED,true)
+                preferenceManager.putBoolean(KEY_IS_VERIFIED,false)
             }
         }
     }
